@@ -66,6 +66,12 @@ export const collections = {
           .string()
           .regex(/^\/decks\/[a-z0-9-]+\/$/)
           .optional(),
+        // Episode-style connective tissue (CLAUDE.md's "every week's page
+        // needs" #6). Optional: not every week has both a previous and a
+        // next episode, and weeks 2-12 don't carry these fields yet.
+        psychologicalQuestion: z.string().trim().min(1).optional(),
+        previouslyOn: z.string().trim().min(1).optional(),
+        nextTease: z.string().trim().min(1).optional(),
       })
       .loose(),
   }),

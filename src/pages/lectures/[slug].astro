@@ -2,6 +2,7 @@
 import { render } from "astro:content";
 import { getPublishedCollection } from "astro-course-university/content";
 import RelatedContent from "astro-course-university/components/RelatedContent.astro";
+import Callout from "astro-theme-university/components/Callout.astro";
 import ContentLayout from "astro-theme-university/layouts/ContentLayout.astro";
 import { withBase } from "astro-theme-university/url";
 import TeachingTeam from "../../components/TeachingTeam.astro";
@@ -21,7 +22,28 @@ const title = `Week ${lecture.data.week}: ${lecture.data.title}`;
 <ContentLayout title={title} description={lecture.data.description} {...siteConfig}>
   <p><strong>{formatCourseDate(lecture.data.date)}</strong></p>
   {lecture.data.slides && <p><a href={withBase(lecture.data.slides)}>Open the slides</a></p>}
+  {
+    lecture.data.previouslyOn && (
+      <Callout type="info">
+        <strong>Previously on…</strong> {lecture.data.previouslyOn}
+      </Callout>
+    )
+  }
+  {
+    lecture.data.psychologicalQuestion && (
+      <Callout type="tip">
+        <strong>This week's question:</strong> {lecture.data.psychologicalQuestion}
+      </Callout>
+    )
+  }
   <Content />
+  {
+    lecture.data.nextTease && (
+      <Callout type="info">
+        <strong>Next episode…</strong> {lecture.data.nextTease}
+      </Callout>
+    )
+  }
   <TeachingTeam teachers={lecture.data.teachers} />
   <RelatedContent entry={lecture} collections={graphCollections} />
 </ContentLayout>

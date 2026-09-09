@@ -1,0 +1,192 @@
+---
+// The Week 1 interaction: three short rounds of the same choice
+// ("keep watching" / "stop"), each run under a different interface
+// condition. The state machine is in src/scripts/one-more-episode.ts,
+// unit-tested in spec/one-more-episode.test.ts; this component only wires
+// it to the DOM and never re-implements its logic.
+---
+
+<div class="ome-experiment" data-ome-root>
+  <div class="ome-intro" data-ome-intro>
+    <p>
+      Three short scenes from a fictional show. Each one ends the same way: you decide whether to
+      keep watching or stop. Nothing about the story changes between rounds — only the interface
+      does.
+    </p>
+    <button type="button" data-ome-start>Start</button>
+  </div>
+
+  <div class="ome-round" data-ome-round hidden>
+    <p class="ome-progress" data-ome-progress></p>
+    <p class="ome-flavour" data-ome-flavour></p>
+    <div class="ome-choices">
+      <div class="ome-choice">
+        <button type="button" data-ome-continue>Continue Watching</button>
+        <p class="ome-teaser" data-ome-teaser hidden></p>
+      </div>
+      <button type="button" data-ome-stop>Stop for now</button>
+    </div>
+  </div>
+
+  <div class="ome-reveal" data-ome-reveal hidden>
+    <h3>What just happened</h3>
+    <ol data-ome-summary></ol>
+    <p class="ome-disclaimer">
+      This is a demonstration with one participant — you — not a controlled study. The mechanisms
+      it borrows are real, well-documented parts of how choice works; this page just makes you feel
+      them.
+    </p>
+  </div>
+</div>
+
+<script>
+  import {
+    continueCount,
+    createInitialState,
+    currentRound,
+    isComplete,
+    recordChoice,
+    summarize,
+    type Choice,
+    type ExperimentState,
+  } from "../scripts/one-more-episode";
+
+  const root = document.querySelector<HTMLElement>("[data-ome-root]");
+  if (root) {
+    const introEl = root.querySelector<HTMLElement>("[data-ome-intro]");
+    const startButton = root.querySelector<HTMLButtonElement>("[data-ome-start]");
+    const roundEl = root.querySelector<HTMLElement>("[data-ome-round]");
+    const progressEl = root.querySelector<HTMLElement>("[data-ome-progress]");
+    const flavourEl = root.querySelector<HTMLElement>("[data-ome-flavour]");
+    const continueButton = root.querySelector<HTMLButtonElement>("[data-ome-continue]");
+    const stopButton = root.querySelector<HTMLButtonElement>("[data-ome-stop]");
+    const teaserEl = root.querySelector<HTMLElement>("[data-ome-teaser]");
+    const revealEl = root.querySelector<HTMLElement>("[data-ome-reveal]");
+    const summaryEl = root.querySelector<HTMLElement>("[data-ome-summary]");
+
+    let state: ExperimentState = createInitialState();
+    let stopTimer: ReturnType<typeof setInterval> | undefined;
+
+    function renderRound() {
+      const round = currentRound(state);
+      if (!round || !progressEl || !flavourEl || !teaserEl || !stopButton || !continueButton)
+        return;
+
+      progressEl.textContent = `Round ${state.roundIndex + 1} of 3`;
+      flavourEl.textContent = round.flavourText;
+
+      if (round.teaserText) {
+        teaserEl.textContent = round.teaserText;
+        teaserEl.hidden = false;
+      } else {
+        teaserEl.hidden = true;
+      }
+
+      continueButton.disabled = false;
+
+      clearInterval(stopTimer);
+      if (round.stopDelaySeconds > 0) {
+        let remaining = round.stopDelaySeconds;
+        stopButton.disabled = true;
+        stopButton.textContent = `Stop for now (${remaining}…)`;
+        stopTimer = setInterval(() => {
+          remaining -= 1;
+          if (remaining <= 0) {
+            clearInterval(stopTimer);
+            stopButton.disabled = false;
+            stopButton.textContent = "Stop for now";
+          } else {
+            stopButton.textContent = `Stop for now (${remaining}…)`;
+          }
+        }, 1000);
+      } else {
+        stopButton.disabled = false;
+        stopButton.textContent = "Stop for now";
+      }
+    }
+
+    function renderReveal() {
+      if (!roundEl || !revealEl || !summaryEl) return;
+      roundEl.hidden = true;
+      revealEl.hidden = false;
+
+      const summary = summarize(state);
+      summaryEl.innerHTML = "";
+      for (const item of summary) {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>Round ${item.roundNumber}:</strong> you chose "${
+          item.choice === "continue" ? "Continue Watching" : "Stop for now"
+        }". ${item.note}`;
+        summaryEl.append(li);
+      }
+
+      const tally = document.createElement("li");
+      tally.innerHTML = `<strong>Overall:</strong> you kept watching in ${continueCount(state)} of ${summary.length} rounds.`;
+      summaryEl.append(tally);
+    }
+
+    function choose(choice: Choice) {
+      state = recordChoice(state, choice);
+      if (isComplete(state)) {
+        renderReveal();
+      } else {
+        renderRound();
+      }
+    }
+
+    startButton?.addEventListener("click", () => {
+      if (!introEl || !roundEl) return;
+      introEl.hidden = true;
+      roundEl.hidden = false;
+      renderRound();
+    });
+
+    continueButton?.addEventListener("click", () => choose("continue"));
+    stopButton?.addEventListener("click", () => choose("stop"));
+  }
+</script>
+
+<style>
+  .ome-experiment {
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-block: 1.5rem;
+  }
+
+  .ome-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-top: 1rem;
+  }
+
+  .ome-choice {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .ome-teaser {
+    font-style: italic;
+    font-size: 0.9em;
+    max-width: 22ch;
+  }
+
+  .ome-flavour {
+    font-weight: 600;
+  }
+
+  .ome-progress {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8em;
+    opacity: 0.75;
+  }
+
+  .ome-disclaimer {
+    font-size: 0.85em;
+    opacity: 0.8;
+  }
+</style>
