@@ -1,0 +1,225 @@
+---
+// The Week 6 interaction: three rounds run for the exact same real duration,
+// each filled with different on-screen content, followed by a slider
+// estimate of how long the round felt. The state machine, its scoring, and
+// its cross-condition comparison live in src/scripts/time-perception.ts,
+// unit-tested in spec/time-perception.test.ts. This component only owns the
+// DOM, the real clock (performance.now()/setTimeout), and rendering — it
+// never re-implements the scoring or completion logic.
+---
+
+<div class="tp-experiment" data-tp-root>
+  <div class="tp-intro" data-tp-intro>
+    <p>
+      Three short rounds. Each one runs for the same length of time — you won't be told how long,
+      and there's no visible clock or countdown while it runs. When a round ends, drag a slider to
+      estimate how many seconds you think just passed.
+    </p>
+    <button type="button" data-tp-start>Start</button>
+  </div>
+
+  <div class="tp-round" data-tp-round hidden>
+    <p class="tp-progress" data-tp-progress></p>
+    <div class="tp-filler" data-tp-filler></div>
+  </div>
+
+  <div class="tp-estimate" data-tp-estimate hidden>
+    <label class="tp-slider-label" for="tp-slider">
+      Your estimate: <span data-tp-slider-value>—</span> seconds
+    </label>
+    <input type="range" id="tp-slider" data-tp-slider min="0" max="40" step="1" value="0" />
+    <p class="tp-slider-hint" data-tp-slider-hint>Drag the slider, then confirm.</p>
+    <button type="button" data-tp-confirm disabled>Confirm estimate</button>
+  </div>
+
+  <div class="tp-reveal" data-tp-reveal hidden>
+    <h3>What just happened</h3>
+    <ol data-tp-summary></ol>
+    <p class="tp-disclaimer">
+      This is a demonstration with one participant — you — not a controlled study. Duration
+      estimates are noisy even for the same person on different days, the rounds always ran in the
+      same order, and three guesses can't tell you anything reliable about your own sense of time.
+      What repeated studies (not this three-round demo) actually show is that filled, eventful time
+      and empty, repetitive time get judged differently on average — not that any one guess of
+      yours proves something about your attention span or self-control.
+    </p>
+  </div>
+</div>
+
+<script>
+  import {
+    compareConditions,
+    createInitialState,
+    currentRound,
+    isComplete,
+    recordEstimate,
+    summarize,
+    type ExperimentState,
+  } from "../scripts/time-perception";
+
+  const root = document.querySelector<HTMLElement>("[data-tp-root]");
+  if (root) {
+    const introEl = root.querySelector<HTMLElement>("[data-tp-intro]");
+    const startButton = root.querySelector<HTMLButtonElement>("[data-tp-start]");
+    const roundEl = root.querySelector<HTMLElement>("[data-tp-round]");
+    const progressEl = root.querySelector<HTMLElement>("[data-tp-progress]");
+    const fillerEl = root.querySelector<HTMLElement>("[data-tp-filler]");
+    const estimateEl = root.querySelector<HTMLElement>("[data-tp-estimate]");
+    const slider = root.querySelector<HTMLInputElement>("[data-tp-slider]");
+    const sliderValueEl = root.querySelector<HTMLElement>("[data-tp-slider-value]");
+    const confirmButton = root.querySelector<HTMLButtonElement>("[data-tp-confirm]");
+    const revealEl = root.querySelector<HTMLElement>("[data-tp-reveal]");
+    const summaryEl = root.querySelector<HTMLElement>("[data-tp-summary]");
+
+    let state: ExperimentState = createInitialState();
+    let fillerTimer: ReturnType<typeof setInterval> | undefined;
+    let endTimer: ReturnType<typeof setTimeout> | undefined;
+    let roundStartedAt = 0;
+    let sliderTouched = false;
+
+    function renderRound() {
+      const round = currentRound(state);
+      if (!round || !progressEl || !fillerEl) return;
+
+      progressEl.textContent = `Round ${state.roundIndex + 1} of 3`;
+
+      let fillerIndex = 0;
+      fillerEl.textContent = round.fillerLines[0] ?? "";
+
+      clearInterval(fillerTimer);
+      if (round.cycleMs > 0) {
+        fillerTimer = setInterval(() => {
+          fillerIndex = (fillerIndex + 1) % round.fillerLines.length;
+          fillerEl.textContent = round.fillerLines[fillerIndex] ?? "";
+        }, round.cycleMs);
+      }
+
+      roundStartedAt = performance.now();
+      clearTimeout(endTimer);
+      endTimer = setTimeout(() => {
+        clearInterval(fillerTimer);
+        const actualElapsedMs = performance.now() - roundStartedAt;
+        showEstimateStep(actualElapsedMs);
+      }, round.actualDurationMs);
+    }
+
+    function showEstimateStep(actualElapsedMs: number) {
+      if (!roundEl || !estimateEl || !slider || !confirmButton || !sliderValueEl) return;
+
+      const round = currentRound(state);
+      if (round) {
+        slider.min = String(round.sliderMinSeconds);
+        slider.max = String(round.sliderMaxSeconds);
+      }
+      slider.value = String(slider.min);
+      sliderValueEl.textContent = "—";
+      sliderTouched = false;
+      confirmButton.disabled = true;
+
+      roundEl.hidden = true;
+      estimateEl.hidden = false;
+
+      slider.oninput = () => {
+        sliderTouched = true;
+        sliderValueEl.textContent = slider.value;
+        confirmButton.disabled = false;
+      };
+
+      confirmButton.onclick = () => {
+        if (!sliderTouched) return;
+        state = recordEstimate(state, Number(slider.value), actualElapsedMs);
+        estimateEl.hidden = true;
+
+        if (isComplete(state)) {
+          renderReveal();
+        } else {
+          roundEl.hidden = false;
+          renderRound();
+        }
+      };
+    }
+
+    function renderReveal() {
+      if (!revealEl || !summaryEl) return;
+      revealEl.hidden = false;
+
+      const CLASSIFICATION_LABEL: Record<string, string> = {
+        overestimate: "you guessed high",
+        underestimate: "you guessed low",
+        accurate: "close to accurate",
+      };
+
+      const summary = summarize(state);
+      summaryEl.innerHTML = "";
+      for (const item of summary) {
+        const li = document.createElement("li");
+        const actualSeconds = (item.actualElapsedMs / 1000).toFixed(1);
+        li.innerHTML = `<strong>Round ${item.roundNumber} (${item.condition}):</strong> you guessed ${item.estimatedSeconds}s, it actually ran ${actualSeconds}s — ${CLASSIFICATION_LABEL[item.classification]}. ${item.note}`;
+        summaryEl.append(li);
+      }
+
+      const comparison = compareConditions(state);
+      if (comparison) {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>Across conditions:</strong> the absorbing round's estimate was ${comparison.absorbingMinusBaselineSeconds.toFixed(1)}s ${comparison.absorbingMinusBaselineSeconds < 0 ? "shorter" : "longer"} than baseline, and the monotonous round's estimate was ${comparison.monotonousMinusBaselineSeconds.toFixed(1)}s ${comparison.monotonousMinusBaselineSeconds > 0 ? "longer" : "shorter"} than baseline — even though all three rounds ran for the same real length of time.`;
+        summaryEl.append(li);
+      }
+    }
+
+    startButton?.addEventListener("click", () => {
+      if (!introEl || !roundEl) return;
+      introEl.hidden = true;
+      roundEl.hidden = false;
+      renderRound();
+    });
+  }
+</script>
+
+<style>
+  .tp-experiment {
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-block: 1.5rem;
+  }
+
+  .tp-filler {
+    margin-top: 1rem;
+    min-height: 3rem;
+    display: flex;
+    align-items: center;
+    font-size: 1.05em;
+  }
+
+  .tp-progress {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8em;
+    opacity: 0.75;
+  }
+
+  .tp-slider-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .tp-estimate input[type="range"] {
+    width: 100%;
+  }
+
+  .tp-slider-hint {
+    font-size: 0.85em;
+    opacity: 0.8;
+    margin-top: 0.35rem;
+  }
+
+  .tp-estimate button {
+    margin-top: 0.75rem;
+  }
+
+  .tp-disclaimer {
+    font-size: 0.85em;
+    opacity: 0.8;
+  }
+</style>

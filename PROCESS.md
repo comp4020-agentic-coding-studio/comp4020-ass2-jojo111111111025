@@ -208,10 +208,110 @@ anything that isn't a button-grid choice repeated over fixed rounds —
 before assuming every future episode can reuse exactly this interaction
 structure.
 
-Next: Phase 6 — decide, informed by Phase 5, how the remaining ten weeks get
-built (one or a few at a time, per CLAUDE.md's build order), including at
-least one week that deliberately stress-tests a non-button-grid interaction
-shape.
+### Phase 6 — stress-test the pattern on a non-button interaction (Week 6)
+
+**Goal:** Phase 5's main remaining concern was that Weeks 1 and 2 are both
+discrete click/choice tasks with a fixed number of rounds. Phase 6 uses
+Week 6 ("Time Perception") specifically to test whether the six-part
+structure and the pure-logic/thin-component/tests pattern survive an
+interaction shape that isn't a button grid at all, before templating the
+remaining nine weeks.
+
+**Why the mechanic is substantially different:** "The Guessing Clock" has no
+mid-round choice and no buttons deciding the outcome. The input is a
+continuous `<input type="range">` estimate, not a category; the outcome is a
+signed numeric error against a real duration, not a tally of picks; and, for
+the first time, the interaction depends on genuinely elapsed wall-clock time
+(measured with `performance.now()`) rather than a static per-round config
+difference. The debrief has to talk in magnitudes (seconds over/under, and a
+comparison across conditions) instead of counting clicks.
+
+**What was reused from the template:** the six-part episode structure
+(question → explanation → example → interaction → debrief → reflection /
+prev-next); the pure-logic-module / thin-`.astro`-component / focused-tests
+split (`src/scripts/time-perception.ts`, `spec/time-perception.test.ts`,
+`src/components/TimePerceptionExperiment.astro`); a baseline round the other
+conditions are compared against; a debrief that explicitly names the
+mechanism and ties it back to the week's stated question; and the same n=1
+/ demonstration-not-evidence discipline, made stronger here because duration
+estimates are noisier than a click choice.
+
+**What had to change:** the logic module owns round configuration, state,
+response recording, signed-error calculation, over/under/accurate
+classification, completion, and the cross-condition comparison — but it
+takes the round's *measured* elapsed time as a plain argument rather than
+owning a clock, so it stays deterministic and DOM-free. The component owns
+`performance.now()`/`setTimeout` for timing, the filler-content cycling
+during a round, the slider UI, and rendering. The slider starts at its
+minimum with no pre-filled "plausible" value and the confirm button stays
+disabled until the visitor actually drags it, so the default itself can't
+double as an anchor.
+
+**Evaluation, as of these Phase 6 working changes (not yet committed):**
+
+- Week 1's and Week 2's own interaction tests
+  (`spec/one-more-episode.test.ts`, `spec/press-play.test.ts`) still pass,
+  unmodified — no regression.
+- Week 6's new interaction tests (`spec/time-perception.test.ts`, 13 tests)
+  pass, covering initial state, immutable transitions, completion and its
+  no-op after completion, exactly-one-round-per-condition, identical
+  `actualDurationMs` across all three rounds, signed-error calculation,
+  over/under/accurate classification (including the tolerance boundary),
+  clamping of out-of-range estimates, the per-round summary, and the
+  cross-condition comparison.
+- `pnpm typecheck`, `astro build`, the build's accessibility checker, and
+  its broken-link checker all pass; 17 pages generated.
+- `curriculum.test.ts`'s narrative-completeness check passes for Weeks 1, 2,
+  and 6. Its week-existence check now lists only 3, 4, 5, 7, 8, 9, 10, 11,
+  12 as missing — Week 6 has moved from "missing" to "present," exactly the
+  expected effect and nothing else.
+- The same headless-browser limitation Phase 3 recorded still applies: this
+  session's container can't run headless Chromium (missing system shared
+  libraries, no root to install them), so the slider's actual click-and-drag
+  behaviour and the real-time filler cycling are verified by reading the
+  component's logic and by the unit tests, not by a live rendered
+  click-through. That gap is unchanged from Phase 3, not new to Phase 6, but
+  it matters more here than for Weeks 1–2 because this is the first
+  interaction whose correctness depends on real elapsed time rather than a
+  static config value.
+
+**Psychological/design risks accepted, and how they were handled:**
+
+- *Timer drift:* the component measures actual elapsed time with
+  `performance.now()` at the moment a round ends, rather than trusting the
+  configured duration blindly, so tab-throttling or device slowness affects
+  the *reported* duration honestly rather than silently.
+- *Anchoring:* the slider has no pre-filled plausible-looking value and the
+  confirm button is disabled until touched.
+- *Confound between pacing and topical interest:* the absorbing condition's
+  filler lines are deliberately flat, neutral fragments (not jokes, not
+  drama) so the manipulation is about *pacing/variety*, not about one
+  condition being more entertaining than another for unrelated reasons.
+- *Accessibility limitation, disclosed rather than hidden:* the absorbing
+  round's fast-changing lines are not read out to screen readers in real
+  time (an `aria-live` region firing every ~1.2 seconds would be its own
+  disruptive experience, and would arguably test something other than this
+  week's mechanism). A screen-reader user can complete every round and see
+  the same final comparison, but doesn't get an equivalent moment-to-moment
+  experience of the "information-dense" condition that a sighted visitor
+  gets. This is named explicitly in the page's debrief rather than left
+  implicit.
+
+**Design conclusion:** the six-part structure and the
+logic-module/thin-component/tests split held up on an interaction with a
+genuinely different shape — continuous input, real elapsed time, and a
+numeric rather than categorical outcome — with the same architectural
+division of labour as Weeks 1 and 2, just a different owner for "measuring
+time" (the component) versus "interpreting it" (the module). That's real
+evidence the template isn't secretly button-grid-shaped; it's still only
+three data points, and the live click-through gap means the slider's actual
+in-browser feel remains unverified in this environment.
+
+Next: Phase 7 — decide, informed by Phases 5 and 6, how the remaining nine
+weeks get built (one or a few at a time, per CLAUDE.md's build order), and
+find an environment where a real dev-server click-through of Weeks 1, 2,
+and 6 is actually possible before leaning further on any of them as
+templates.
 
 Citations above follow the format the assessment page asks for: link text is
 the commit hash or range, the link target is this repo's commit or compare

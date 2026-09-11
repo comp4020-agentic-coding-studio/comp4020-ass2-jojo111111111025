@@ -1,0 +1,138 @@
+---
+title: Time Perception
+description:
+  Three episodes can feel shorter than fifteen minutes spent waiting for a
+  bus. This week is about why elapsed time and felt time keep disagreeing —
+  and what that has to do with losing track of a binge.
+week: 6
+date: 2027-03-29
+teachers:
+  - marisol-quaye
+psychologicalQuestion: Why can three episodes feel shorter than fifteen minutes of waiting?
+previouslyOn:
+  Last week was about the small, unpredictable payoffs that keep a habit
+  going once it's already started. This week steps sideways from reward into
+  something stranger — how long any of this actually felt like it took.
+nextTease:
+  Losing track of time is one thing when you only meant to watch one episode.
+  It's a different thing once "one more" quietly becomes "the whole season" —
+  that's next episode's question.
+---
+
+import TimePerceptionExperiment from "../../components/TimePerceptionExperiment.astro";
+
+## This week's question
+
+Ask someone who just finished a three-episode binge how long it took, and
+they'll often guess low — sometimes by a lot. Ask someone who spent fifteen
+minutes waiting for a delayed bus how long *that* took, and they'll often
+guess high. Clocks don't work that way. Something else is doing the
+measuring.
+
+## Why time doesn't measure itself
+
+Nobody has a stopwatch running in their head. Instead, a rough estimate of
+"how long was that" gets built out of two very different kinds of evidence,
+and which one you're stuck with depends on what you were doing at the time.
+
+The first is **how much you had to attend to**. When something keeps giving
+you new things to notice — a fast cut, a new detail, a plot turn — most of
+your attention goes to *that*, and very little is left over for tracking
+duration itself. Less attention spent on timing produces a shorter estimate
+afterward, regardless of how much clock time actually passed.
+
+The second is **how little there was to attend to**. When nothing new is
+happening, there's nothing competing for your attention, so more of it ends
+up spent noticing that time is passing at all — which, perversely, makes the
+wait feel *longer*, not shorter. A boring wait doesn't just feel unpleasant;
+it feels long specifically because you had nothing else to do but notice it
+going by.
+
+Put the two together and you get the binge-watching version of this: a
+gripping, event-dense episode leaves you with almost no felt sense of how
+long you were watching, so "one more" doesn't feel like it costs anything —
+the clock disagrees, but your sense of elapsed time was never asking the
+clock in the first place.
+
+## A familiar scene
+
+You start an episode around 9pm intending to watch one. Three episodes and
+one deeply eventful hour-and-a-half later, you check the time and it reads
+almost midnight — and your honest, gut-level reaction is closer to confusion
+than guilt. It didn't *feel* like two and a half hours. Compare that to the
+fifteen minutes you spent earlier that same day watching a loading spinner:
+objectively a tenth of the time, and it probably felt longer. The show
+wasn't tricking you about the clock. Your sense of duration was just built
+out of something other than the clock the whole time.
+
+## The interactive experiment: The Guessing Clock
+
+Below are three rounds. Each one runs for exactly the same real length of
+time — you won't be told how long, and there's no visible countdown or clock
+while it's running. When a round ends on its own, you'll drag a slider to
+guess how many seconds you think just passed. Don't count seconds in your
+head on purpose; just watch, and guess afterward the way you actually would.
+
+<TimePerceptionExperiment />
+
+## What just happened?
+
+- **Round 1 was the baseline.** A plain, unchanging scene, run for the
+  round's real duration with nothing designed to speed up or slow down how
+  it felt. Your guess here is what the other two rounds are compared
+  against, not a "correct" answer.
+- **Round 2 was the absorbing condition.** The exact same real duration as
+  round 1, filled instead with something new to notice every second or so.
+  If this round's guess came in lower than round 1's, that's the mechanism
+  this week is about: less attention left over for tracking time produces a
+  shorter felt duration, even though nothing about the clock changed.
+- **Round 3 was the monotonous condition.** Again, the exact same real
+  duration — but filled with the same information-free line repeating on a
+  slow, steady beat. If this round's guess came in higher than round 1's,
+  that's the other half of the mechanism: an empty, repetitive wait leaves
+  attention with nothing to do but notice time passing, which inflates the
+  estimate.
+
+That's this week's question, answered in miniature: three rounds, identical
+real length, three different guesses — the only thing that changed between
+them was what your attention had to work with. Scale that up to a real binge
+and the eventful, fast-moving stretch of episodes is the "absorbing" round
+writ large: not a trick, just very little left over to notice the clock
+running.
+
+**What this demonstration can't tell you:** duration estimates like this are
+noisy even from the same person on different days, the three rounds always
+ran in a fixed order rather than a randomised one, and a single guess from a
+single visitor — you — is not evidence about your own attention span, your
+self-control, or how "susceptible" you are to losing track of time. What
+repeated, controlled studies (not this three-round demo) actually show is
+that filled and empty time get judged differently on average across many
+people. This page can only make you feel the mechanism once; it can't
+measure where your own personal baseline sits.
+
+**An honest limitation of the interaction itself:** the "absorbing"
+round's fast-changing on-screen lines aren't announced to a screen reader in
+real time — doing that would mean a screen reader interrupting itself every
+second, which would be its own kind of unpleasant and would arguably
+manipulate a *different* sense than the one this week is about. That's a
+genuine gap, not a solved one: a visitor using a screen reader can complete
+every round and reach the same final comparison, but doesn't get an
+equivalent moment-to-moment experience of the "information-dense" condition
+that a sighted visitor gets. Worth naming plainly rather than papering over.
+
+## Reflection
+
+Think of the last time you completely lost track of how long you'd been
+watching something, and compare it to the last time a short wait felt
+endless. Now that "how much was there to attend to" is named as the
+mechanism doing the work in both cases: does it change how you'd explain
+either moment to someone else — from "I don't know where the time went" or
+"it felt like forever," to something closer to "there was either too much or
+too little to notice, and my sense of time went with it"?
+
+## Next episode
+
+This week was about why elapsed time and felt time disagree, in either
+direction. It said nothing about what happens once that gap gets used
+deliberately, episode after episode, to turn "one more" into an entire
+season. That's next episode's question.
