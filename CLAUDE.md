@@ -77,6 +77,46 @@ autoplay-style countdowns, recommendation-style navigation. Don't copy
 Netflix's actual branding, palette, or logo treatment — the site needs its own
 academic identity underneath the streaming behaviour.
 
+### Conventions established by Week 1 (Phase 4)
+
+Week 1 (`src/content/lectures/week-01.mdx`, `68308d3`) is the proof of these
+two patterns, not a template file to copy. Follow the patterns; don't force
+a later week's headings or interaction shape to match Week 1's literally —
+that's decorative uniformity, the exact A1 failure mode.
+
+**Page structure** — the six required elements map onto sections in this
+order: psychological question (frontmatter `psychologicalQuestion`, surfaced
+by `[slug].astro`) → explanation → concrete example → the interaction →
+a debrief that names the mechanism(s) the interaction just used and warns
+against reading a single, n=1 run as personal evidence → reflection prompt
+→ "Next episode" (and "Previously on…", for every week but 1). Section
+headings themselves are free — "This week's question" and "A familiar
+scene" are Week 1's wording, not required text. An extra section (Week 1 has
+"Learning objectives") is fine when it earns its place; it's not one of the
+six and isn't mandatory elsewhere.
+
+**Interaction architecture** — when a week's interaction is more than static
+prose, split it the way `one-more-episode.ts` / `OneMoreEpisodeExperiment.astro`
+/ `one-more-episode.test.ts` do: pure, DOM-free state logic in
+`src/scripts/<name>.ts`, unit-tested in `spec/<name>.test.ts`, and a thin
+`.astro` component that only wires that logic to the DOM and never
+re-implements it. Each week's interaction is its own bespoke component —
+there is no shared "InteractionWidget" to extend, and building one before a
+second or third interaction exists would be guessing at an API from a
+sample size of one. Not every week needs a stateful interaction at all;
+CLAUDE.md's own #4 already qualifies this to "where one genuinely helps."
+
+`psychologicalQuestion`, `previouslyOn`, and `nextTease` stay `.optional()` in
+`content.config.ts`'s `lectures` schema — Astro validates content at build
+time unconditionally, so making them required there would break build/dev
+for every unfinished placeholder week, not just flag the gap. Instead,
+`spec/curriculum.test.ts` reports missing connective tissue as a normal,
+non-build-breaking test failure: every lecture needs
+`psychologicalQuestion`, weeks 2-12 need `previouslyOn` (week 1 is exempt —
+it has no predecessor), and weeks 1-11 need `nextTease` (week 12 is exempt —
+"The Final Episode" has no successor). A future week missing its connective
+tissue shows up as a red test, not a broken build.
+
 ### Build order — do not jump to building all 12 weeks
 
 Prototype one week's page fully (content + interaction + layout) before

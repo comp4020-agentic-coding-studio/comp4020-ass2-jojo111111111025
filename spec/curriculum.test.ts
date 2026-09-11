@@ -37,4 +37,22 @@ describe("curriculum", () => {
     const total = assessments.reduce((sum, node) => sum + Number(node.meta?.weight ?? 0), 0);
     expect(total, `assessment weights sum to ${total}, not 100`).toBe(100);
   });
+
+  it("every episode states its question and links to its neighbours", () => {
+    const lectures = api.nodes.filter((node) => node.type === "lectures");
+    const problems: string[] = [];
+    for (const lecture of lectures) {
+      const week = Number(lecture.meta?.week);
+      if (!lecture.meta?.psychologicalQuestion) {
+        problems.push(`${lecture.id}: missing psychologicalQuestion`);
+      }
+      if (week !== 1 && !lecture.meta?.previouslyOn) {
+        problems.push(`${lecture.id}: missing previouslyOn`);
+      }
+      if (week !== 12 && !lecture.meta?.nextTease) {
+        problems.push(`${lecture.id}: missing nextTease`);
+      }
+    }
+    expect(problems, problems.join("\n")).toEqual([]);
+  });
 });

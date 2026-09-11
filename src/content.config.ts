@@ -67,8 +67,12 @@ export const collections = {
           .regex(/^\/decks\/[a-z0-9-]+\/$/)
           .optional(),
         // Episode-style connective tissue (CLAUDE.md's "every week's page
-        // needs" #6). Optional: not every week has both a previous and a
-        // next episode, and weeks 2-12 don't carry these fields yet.
+        // needs" #6). Optional here — Astro validates content at build
+        // time unconditionally, so a hard requirement would break the
+        // build for every week that isn't finished content yet, not just
+        // flag the gap. spec/curriculum.test.ts checks completeness of
+        // these fields across finished weeks the same non-build-breaking
+        // way it already checks week existence.
         psychologicalQuestion: z.string().trim().min(1).optional(),
         previouslyOn: z.string().trim().min(1).optional(),
         nextTease: z.string().trim().min(1).optional(),
