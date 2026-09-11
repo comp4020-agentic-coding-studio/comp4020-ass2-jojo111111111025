@@ -143,11 +143,75 @@ real content, not decoration around the widget.
   real dev-server click-through in a normal environment before leaning on
   this page as the template for the other eleven.
 
-Next: Phase 4 — decide whether the remaining eleven weeks get templated
-from Week 1's shape as-is, or whether anything Week 1 surfaced (the
-component's API, the frontmatter shape) is worth adjusting first, then bring
-`curriculum.test.ts` back to green one week at a time rather than in one
-full-site pass.
+Phase 4 (`5b9f548`) decided the frontmatter shape needed no changes, but the
+enforcement mechanism did: a schema-level `.superRefine` requiring
+`psychologicalQuestion`/`previouslyOn`/`nextTease` was tried first and
+reverted once it turned out to hard-fail `astro check`/`astro build` for
+every unfinished placeholder week, not just report the gap. The fields stay
+`.optional()` in `content.config.ts`; `spec/curriculum.test.ts` gained a
+test that reports missing connective tissue as a normal, non-build-breaking
+failure instead.
+
+### Phase 5 — validate the pattern on a second mechanic (Week 2)
+
+**Goal:** Phase 3 proved Week 1's page structure and interaction
+architecture work for one mechanic. Phase 5 uses Week 2 — a different
+psychological mechanism (why people press play at all, vs. Week 1's why
+they don't stop) — to test whether that structure and architecture hold up
+on a second, deliberately different interaction, before assuming they're a
+template for Weeks 3–12.
+
+**What was reused from Week 1:**
+
+- the six-part episode structure: psychological question → explanation →
+  concrete example → interaction → debrief → reflection / prev-next
+  navigation
+- the interaction architecture: pure, DOM-free state logic
+  (`src/scripts/*.ts`) → a thin `.astro` component that only wires that
+  logic to the DOM → focused unit tests
+- a debrief that explicitly names the mechanism(s) the interaction just
+  used and ties them back to the week's stated psychological question
+- explicit n=1 / demonstration-not-evidence framing, so a three-click
+  exercise is never oversold as data about the visitor
+
+**What's new for Week 2:** a "Browse Screen" pick-one-of-three interaction —
+meaningfully different from Week 1's binary continue/stop choice, not a
+re-skin of it. Three rounds: an unmanipulated baseline (the visitor's
+starting preference), a social-proof condition (one show carries a
+"Trending #1" badge), and a curiosity-gap condition (one show's synopsis
+poses an unresolved question instead of a plot summary). State machine and
+its own unit tests live in `src/scripts/press-play.ts` /
+`spec/press-play.test.ts`, independent of Week 1's `one-more-episode.ts`.
+
+**Evaluation, as of these Phase 5 working changes (not yet committed):**
+
+- Week 1's own interaction tests (`spec/one-more-episode.test.ts`) still
+  pass, unmodified — no regression.
+- Week 2's new interaction tests (`spec/press-play.test.ts`) pass.
+- `pnpm typecheck`, `astro build`, the build's accessibility checker, and
+  its broken-link checker all pass.
+- `curriculum.test.ts`'s narrative-completeness check now passes for both
+  Week 1 and Week 2.
+- The only remaining `curriculum.test.ts` failure is the expected one:
+  Weeks 3–12 still have no lecture or session content at all.
+
+**Design conclusion:** the episode structure and the pure-logic/thin-component
+interaction pattern held up across two mechanics with no forcing. That's
+real evidence the pattern generalises, but it's still limited evidence —
+both Week 1 and Week 2's interactions are discrete click/choice tasks with a
+fixed number of rounds and a reveal step. This is not yet grounds to claim
+the template is fully validated for all remaining weeks.
+
+**Main remaining concern:** a future week should exercise a substantially
+different interaction shape — continuous input, ordering/ranking, or
+anything that isn't a button-grid choice repeated over fixed rounds —
+before assuming every future episode can reuse exactly this interaction
+structure.
+
+Next: Phase 6 — decide, informed by Phase 5, how the remaining ten weeks get
+built (one or a few at a time, per CLAUDE.md's build order), including at
+least one week that deliberately stress-tests a non-button-grid interaction
+shape.
 
 Citations above follow the format the assessment page asks for: link text is
 the commit hash or range, the link target is this repo's commit or compare

@@ -1,0 +1,182 @@
+---
+// The Week 2 interaction: three short rounds of the same task (pick one of
+// three shows to start), each run under a different presentation condition.
+// The state machine is in src/scripts/press-play.ts, unit-tested in
+// spec/press-play.test.ts; this component only wires it to the DOM and never
+// re-implements its logic.
+---
+
+<div class="pp-experiment" data-pp-root>
+  <div class="pp-intro" data-pp-intro>
+    <p>
+      Three rounds of the same task: a small browse screen, three shows you've never heard of,
+      pick one to start. Nothing about the shows changes between rounds — only how they're
+      presented.
+    </p>
+    <button type="button" data-pp-start>Start</button>
+  </div>
+
+  <div class="pp-round" data-pp-round hidden>
+    <p class="pp-progress" data-pp-progress></p>
+    <p class="pp-prompt" data-pp-prompt></p>
+    <div class="pp-tiles" data-pp-tiles></div>
+  </div>
+
+  <div class="pp-reveal" data-pp-reveal hidden>
+    <h3>What just happened</h3>
+    <ol data-pp-summary></ol>
+    <p class="pp-disclaimer">
+      This is a demonstration with one participant — you — not a controlled study, and the cued
+      option sits in a different slot each round so it isn't just "people click the same spot."
+      One person clicking a badge twice still isn't evidence about your own taste in shows; what
+      it can show is that the mechanism — a cue that isn't about the content pulling the click —
+      is real and repeatable, not what your personal threshold for it is.
+    </p>
+  </div>
+</div>
+
+<script>
+  import {
+    createInitialState,
+    cuedPickCount,
+    currentRound,
+    isComplete,
+    recordPick,
+    summarize,
+    type ExperimentState,
+  } from "../scripts/press-play";
+
+  const root = document.querySelector<HTMLElement>("[data-pp-root]");
+  if (root) {
+    const introEl = root.querySelector<HTMLElement>("[data-pp-intro]");
+    const startButton = root.querySelector<HTMLButtonElement>("[data-pp-start]");
+    const roundEl = root.querySelector<HTMLElement>("[data-pp-round]");
+    const progressEl = root.querySelector<HTMLElement>("[data-pp-progress]");
+    const promptEl = root.querySelector<HTMLElement>("[data-pp-prompt]");
+    const tilesEl = root.querySelector<HTMLElement>("[data-pp-tiles]");
+    const revealEl = root.querySelector<HTMLElement>("[data-pp-reveal]");
+    const summaryEl = root.querySelector<HTMLElement>("[data-pp-summary]");
+
+    let state: ExperimentState = createInitialState();
+
+    function renderRound() {
+      const round = currentRound(state);
+      if (!round || !progressEl || !promptEl || !tilesEl) return;
+
+      progressEl.textContent = `Round ${state.roundIndex + 1} of 3`;
+      promptEl.textContent = round.prompt;
+
+      tilesEl.innerHTML = "";
+      for (const option of round.options) {
+        const tile = document.createElement("button");
+        tile.type = "button";
+        tile.className = "pp-tile";
+        tile.dataset.ppOption = option.id;
+        tile.innerHTML = `
+          ${option.badge ? `<span class="pp-badge">${option.badge}</span>` : ""}
+          <strong class="pp-tile-title">${option.title}</strong>
+          <span class="pp-tile-synopsis">${option.synopsis}</span>
+        `;
+        tile.addEventListener("click", () => choose(option.id));
+        tilesEl.append(tile);
+      }
+    }
+
+    function renderReveal() {
+      if (!roundEl || !revealEl || !summaryEl) return;
+      roundEl.hidden = true;
+      revealEl.hidden = false;
+
+      const summary = summarize(state);
+      summaryEl.innerHTML = "";
+      for (const item of summary) {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>Round ${item.roundNumber}:</strong> you picked "${item.pickedOptionId}"${item.pickedCuedOption ? " — the cued one" : ""}. ${item.note}`;
+        summaryEl.append(li);
+      }
+
+      const tally = document.createElement("li");
+      tally.innerHTML = `<strong>Overall:</strong> the cue pulled your pick in ${cuedPickCount(state)} of 2 manipulated rounds.`;
+      summaryEl.append(tally);
+    }
+
+    function choose(optionId: string) {
+      state = recordPick(state, optionId);
+      if (isComplete(state)) {
+        renderReveal();
+      } else {
+        renderRound();
+      }
+    }
+
+    startButton?.addEventListener("click", () => {
+      if (!introEl || !roundEl) return;
+      introEl.hidden = true;
+      roundEl.hidden = false;
+      renderRound();
+    });
+  }
+</script>
+
+<style>
+  .pp-experiment {
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-block: 1.5rem;
+  }
+
+  .pp-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .pp-tile {
+    flex: 1 1 12rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    text-align: left;
+    padding: 0.85rem;
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.4rem;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .pp-tile:hover {
+    border-color: currentColor;
+  }
+
+  .pp-tile-synopsis {
+    font-size: 0.9em;
+    opacity: 0.85;
+  }
+
+  .pp-badge {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    opacity: 0.75;
+  }
+
+  .pp-prompt {
+    font-weight: 600;
+  }
+
+  .pp-progress {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8em;
+    opacity: 0.75;
+  }
+
+  .pp-disclaimer {
+    font-size: 0.85em;
+    opacity: 0.8;
+  }
+</style>
