@@ -445,6 +445,9 @@ narrative connecting six mechanisms in one specific order; a different,
 equally defensible chain could have been written, and the page says so
 explicitly rather than presenting its chain as the only correct one.
 
+Next: all twelve weeks are complete. What remains is final validation,
+deployment, and evidence — not further week content.
+
 Citations above follow the format the assessment page asks for: link text is
 the commit hash or range, the link target is this repo's commit or compare
 URL. Screenshots, when a later phase needs one, get committed to the repo and
