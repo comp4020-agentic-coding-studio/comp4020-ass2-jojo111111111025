@@ -1,0 +1,138 @@
+---
+// The Week 7 interaction: an open-ended "watch another / stop" loop where the
+// running episode count is deliberately never shown while the visitor is
+// deciding — only an accumulating row of episode chips is visible, and the
+// actual number is revealed once they choose to stop (or hit the built-in
+// cap). The state machine lives in src/scripts/session-builder.ts,
+// unit-tested in spec/session-builder.test.ts — this component only wires it
+// to the DOM and never re-implements it.
+---
+
+<div class="sb-experiment" data-sb-root>
+  <div class="sb-session" data-sb-session>
+    <p class="sb-teaser" data-sb-teaser></p>
+    <div class="sb-actions">
+      <button type="button" data-sb-watch>Watch this episode</button>
+      <button type="button" data-sb-stop>Stop and see how many</button>
+    </div>
+    <div class="sb-chips" data-sb-chips role="list" aria-label="Episodes watched so far (count hidden)"></div>
+  </div>
+
+  <div class="sb-reveal" data-sb-reveal hidden>
+    <h3>What just happened</h3>
+    <p data-sb-count></p>
+    <p data-sb-note></p>
+    <p class="sb-disclaimer">
+      This is a demonstration with one participant — you — not a controlled study. One session,
+      from one visitor, on a made-up show, isn't evidence about your own binge-watching habits —
+      it can only show that a running total left unshown is a running total left unnoticed.
+    </p>
+  </div>
+</div>
+
+<script>
+  import {
+    createInitialState,
+    currentCue,
+    isComplete,
+    stopSession,
+    summarize,
+    watchOne,
+    type SessionState,
+  } from "../scripts/session-builder";
+
+  const root = document.querySelector<HTMLElement>("[data-sb-root]");
+  if (root) {
+    const sessionEl = root.querySelector<HTMLElement>("[data-sb-session]");
+    const teaserEl = root.querySelector<HTMLElement>("[data-sb-teaser]");
+    const watchButton = root.querySelector<HTMLButtonElement>("[data-sb-watch]");
+    const stopButton = root.querySelector<HTMLButtonElement>("[data-sb-stop]");
+    const chipsEl = root.querySelector<HTMLElement>("[data-sb-chips]");
+    const revealEl = root.querySelector<HTMLElement>("[data-sb-reveal]");
+    const countEl = root.querySelector<HTMLElement>("[data-sb-count]");
+    const noteEl = root.querySelector<HTMLElement>("[data-sb-note]");
+
+    let state: SessionState = createInitialState();
+
+    function renderSession() {
+      const cue = currentCue(state);
+      if (!teaserEl || !cue) return;
+      teaserEl.textContent = cue.teaser;
+
+      if (chipsEl) {
+        const chip = document.createElement("span");
+        chip.className = "sb-chip";
+        chip.setAttribute("role", "listitem");
+        chip.setAttribute("aria-hidden", "true");
+        chipsEl.append(chip);
+      }
+    }
+
+    function renderReveal() {
+      if (!sessionEl || !revealEl || !countEl || !noteEl) return;
+      sessionEl.hidden = true;
+      revealEl.hidden = false;
+
+      const summary = summarize(state);
+      countEl.innerHTML = `<strong>Episodes watched: ${summary.episodesWatched}.</strong> That number was never shown to you while you were deciding — only the chips above were.`;
+      noteEl.textContent = summary.note;
+    }
+
+    watchButton?.addEventListener("click", () => {
+      state = watchOne(state);
+      if (isComplete(state)) {
+        renderReveal();
+      } else {
+        renderSession();
+      }
+    });
+
+    stopButton?.addEventListener("click", () => {
+      state = stopSession(state);
+      renderReveal();
+    });
+
+    renderSession();
+  }
+</script>
+
+<style>
+  .sb-experiment {
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-block: 1.5rem;
+  }
+
+  .sb-teaser {
+    font-weight: 600;
+    min-height: 1.5em;
+  }
+
+  .sb-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+  }
+
+  .sb-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 1rem;
+  }
+
+  .sb-chip {
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 2px;
+    background: var(--at-color-accent, #666);
+    display: inline-block;
+  }
+
+  .sb-disclaimer {
+    font-size: 0.85em;
+    opacity: 0.8;
+  }
+</style>

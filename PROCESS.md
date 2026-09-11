@@ -307,11 +307,143 @@ evidence the template isn't secretly button-grid-shaped; it's still only
 three data points, and the live click-through gap means the slider's actual
 in-browser feel remains unverified in this environment.
 
-Next: Phase 7 — decide, informed by Phases 5 and 6, how the remaining nine
-weeks get built (one or a few at a time, per CLAUDE.md's build order), and
-find an environment where a real dev-server click-through of Weeks 1, 2,
-and 6 is actually possible before leaning further on any of them as
-templates.
+### Phase 7 — build the remaining nine weeks, deliberately not identically
+
+**Goal:** with the pattern validated on three structurally different
+mechanics (Weeks 1, 2, 6), complete Weeks 3, 4, 5, 7, 8, 9, 10, 11, and 12
+without templating one mechanic nine times. Each week reuses the same
+architecture — pure, DOM-free logic in `src/scripts/*.ts`, unit tests in
+`spec/*.test.ts`, a thin `.astro` component that only wires that logic to
+the DOM, and MDX content following the six-part structure — but each picks
+whichever mechanic and native control actually teaches that week's specific
+question, per CLAUDE.md's own qualifier that an interaction earns its place
+only "where one genuinely helps."
+
+**Mechanic per week**, deliberately varied so the demo isn't nine copies of
+a button grid:
+
+- **Week 3 (Cliffhangers):** a keyboard-operable move-up/move-down ranking
+  task over four scene-endings, scored against an illustrative info-gap
+  order via concordant pairs — a sequencing mechanic, not a pick-one choice.
+- **Week 4 (Autoplay):** a real countdown timer (`performance.now()` +
+  `setInterval`/`setTimeout`) across three rounds with an interrupt button,
+  holding the countdown duration constant so only the interface condition
+  (baseline / buried stop button / silent countdown) varies.
+- **Week 5 (Rewards & Reinforcement):** a single repeatable "check" button
+  against two fixed reward schedules (fixed-ratio vs. variable), with an
+  identical total reward count in each so only the *pattern* of payoff
+  differs, not the amount.
+- **Week 7 (Binge Watching):** an open-ended watch/stop loop with the
+  running episode count deliberately hidden until the visitor stops —
+  accumulation without visible feedback, the mirror image of Week 10.
+- **Week 8 (Recommendation Algorithms):** a five-round tile-pick task
+  backed by a deterministic largest-remainder weighted-allocation algorithm
+  (`allocateSlots`), with a visible "diversity meter" showing the feed
+  narrowing toward whatever the visitor keeps picking.
+- **Week 9 (Social Watching):** a four-round forced choice between two
+  *identical* shows, isolating a crowd cue and a named-friend cue from any
+  actual content difference, with the cued slot alternating so the demo
+  isn't secretly measuring slot preference.
+- **Week 10 (Sleep vs Entertainment):** a depleting `<progress>` budget bar
+  with a fixed per-episode cost, visible the whole session — accumulation
+  *with* visible feedback, testing whether visibility alone changes
+  behaviour.
+- **Week 11 (Breaking the Loop):** a sequence simulation, not a single
+  round. One fixed five-stage loop (cue → episode → autoplay → reward →
+  recommendation) repeats for an illustrative capped number of laps; the
+  visitor runs the *same* intervention (declining autoplay) at three
+  different points and compares the resulting sequences side by side. An
+  intervention/reset mechanic, and the first week whose interaction is
+  about *timing* rather than a single decision.
+- **Week 12 (The Final Episode):** a synthesis, explicitly not a new
+  mechanism. Six fixed scenes, one per mechanism from Weeks 3–5 and 7–10,
+  shown out of teaching order; the visitor identifies which mechanism each
+  scene uses, then sees the fixed reveal chain showing how all six hand off
+  into each other across one ordinary session, regardless of the visitor's
+  score.
+
+**What was reused from Weeks 1, 2, and 6:** the logic-module/thin-component
+architecture and its `data-*`-attribute wiring convention, the six-part
+section order (question → explanation → example → interaction → debrief →
+reflection/navigation), the narrative-chaining discipline (each week's
+`previouslyOn` dovetails with its predecessor's `nextTease` — checked by
+hand against Weeks 2, 6, 9, and 10's existing locked-in copy while writing
+3, 5, 7, and 11), the "hold one variable constant to isolate the taught
+effect" discipline from Week 6's timer work, and the explicit n=1 disclaimer
+in every debrief. `src/pages/lectures/[slug].astro` needed zero changes —
+it was already generic across all twelve weeks. `content.config.ts` was not
+touched: the existing `.optional()` schema for `psychologicalQuestion` /
+`previouslyOn` / `nextTease` already covered every new week without
+modification, and `spec/curriculum.test.ts` (unchanged) now reports the
+full set of narrative requirements passing for all twelve weeks instead of
+just three.
+
+**Architecture verdict:** the pattern held for all nine remaining weeks,
+including two (11 and 12) that are structurally unlike anything built in
+Phases 3–6 — a multi-lap sequence simulation and a fixed-answer-key
+synthesis exercise, neither of which is a "pick one of N options" shape.
+No shared `InteractionWidget` was ever built or needed; each week's
+`.astro` component remains bespoke, and the only thing that generalised was
+the *split* between logic and DOM, not any shared code between weeks.
+
+**One real bug found and fixed:** Week 7's `.mdx` frontmatter `description`
+began with a literal `"` character, which YAML parses as an unterminated
+quoted scalar rather than a plain multi-line string — `astro check` failed
+outright with "bad indentation of a mapping entry" until the leading quote
+was removed. This was caught by `pnpm typecheck`, not by any unit test,
+which is exactly the gap a full build-time check exists to catch that an
+isolated `vitest run` of one script's logic cannot.
+
+**Test results:** all 15 spec files, 119 tests, pass — one file per
+interaction (`one-more-episode`, `press-play`, `cliffhanger-ranking`,
+`autoplay-window`, `reward-schedule`, `time-perception`, `session-builder`,
+`narrowing-feed`, `social-signal`, `sleep-ledger`, `breaking-the-loop`,
+`final-episode`) plus the four shipped-template/spec files
+(`course-code`, `data-integrity`, `curriculum`, plus this repo's own
+additions). `curriculum.test.ts` now passes with all twelve weeks present,
+a slides link on at least one lecture, assessment weights summing to 100,
+and every lecture's narrative fields complete except the two documented,
+intentional exemptions (Week 1 has no `previouslyOn`, Week 12 has no
+`nextTease`).
+
+**Full project check:** `pnpm check` (typecheck + build + `vitest run
+spec`) passes clean — 0 type errors, 0 warnings that affect the exit code
+(two pre-existing informational hints about unused destructured imports in
+`RewardScheduleExperiment.astro`, unrelated to Phase 7 and left alone per
+the instruction not to rewrite Weeks 3–10). `astro build` generates all 26
+pages, including `/lectures/week-01/` through `/lectures/week-12/`.
+`astro-theme-university`'s build-time accessibility check reports 0
+violations across all 26 pages; its internal-link check reports all links
+respect the deployment base path; `astro-broken-links-checker` reports 0
+broken links across all 26 generated HTML pages.
+
+**Browser/headless limitations, unchanged from Phases 3–6:** every new
+interaction's correctness is verified through its unit tests and through
+reading the component's DOM-wiring code, not through a live rendered
+click-through — this environment still has no confirmed path to a real
+dev-server browser session. This matters most for Week 4's real countdown
+timer and Week 11's sequence-comparison UI, where the *logic* of timing and
+sequencing is fully tested but the felt experience of watching a countdown
+run, or of reading three run cards side by side, is unverified in-browser.
+
+**Accessibility limitations, disclosed rather than hidden:** all new
+interactions use native controls (`<button>`, `<progress>`, `<ol>`/`<li>`
+ranking with `aria-label`led move buttons) and visible focus from the
+theme's base styles, consistent with Weeks 1, 2, and 6. Week 11's run cards
+render sequentially into the DOM as each intervention is tried, without an
+`aria-live` announcement — a screen-reader user gets the full content once
+focus reaches it, but not a real-time announcement of each new run
+appearing, the same trade-off Week 6 made and disclosed for its fast-moving
+filler text.
+
+**Remaining design risks:** the mechanic-diversity claim above is a
+design judgement, not a measured one — nine mechanics were chosen to *look*
+and *feel* different from each other, but no user testing confirms a
+visitor actually experiences them as nine distinct mechanisms rather than
+variations on "click things in a box." Week 12's synthesis chain is a fixed
+narrative connecting six mechanisms in one specific order; a different,
+equally defensible chain could have been written, and the page says so
+explicitly rather than presenting its chain as the only correct one.
 
 Citations above follow the format the assessment page asks for: link text is
 the commit hash or range, the link target is this repo's commit or compare

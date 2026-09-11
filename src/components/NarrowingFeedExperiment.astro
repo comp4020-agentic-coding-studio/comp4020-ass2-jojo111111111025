@@ -1,0 +1,163 @@
+---
+// The Week 8 interaction: five rounds of picking one show from a small tile
+// grid, where the grid's category mix shifts each round to lean toward
+// whatever category the visitor keeps picking — a fixed, deterministic
+// weighting rule, not a live model. A visible diversity meter (how many
+// distinct categories are on screen this round) makes the narrowing legible
+// as it happens. The state machine lives in src/scripts/narrowing-feed.ts,
+// unit-tested in spec/narrowing-feed.test.ts — this component only wires it
+// to the DOM.
+---
+
+<div class="nf-experiment" data-nf-root>
+  <div class="nf-round" data-nf-round>
+    <p class="nf-progress" data-nf-progress></p>
+    <p class="nf-diversity" data-nf-diversity></p>
+    <div class="nf-tiles" data-nf-tiles></div>
+  </div>
+
+  <div class="nf-reveal" data-nf-reveal hidden>
+    <h3>What just happened</h3>
+    <p data-nf-diversity-change></p>
+    <ol data-nf-summary></ol>
+    <p class="nf-disclaimer">
+      This is a demonstration with one participant — you — not a controlled study, and the
+      weighting rule above is a fixed, simplified teaching formula — not the algorithm any real
+      streaming service uses. Five rounds on a four-category toy catalogue can't tell you anything
+      about your own taste; it can only show that narrowing toward past picks is a predictable,
+      mechanical consequence of that kind of rule.
+    </p>
+  </div>
+</div>
+
+<script>
+  import {
+    categoryLabel,
+    createInitialState,
+    currentRound,
+    isComplete,
+    recordPick,
+    summarize,
+    type Category,
+    type FeedState,
+  } from "../scripts/narrowing-feed";
+
+  const root = document.querySelector<HTMLElement>("[data-nf-root]");
+  if (root) {
+    const progressEl = root.querySelector<HTMLElement>("[data-nf-progress]");
+    const diversityEl = root.querySelector<HTMLElement>("[data-nf-diversity]");
+    const tilesEl = root.querySelector<HTMLElement>("[data-nf-tiles]");
+    const roundEl = root.querySelector<HTMLElement>("[data-nf-round]");
+    const revealEl = root.querySelector<HTMLElement>("[data-nf-reveal]");
+    const diversityChangeEl = root.querySelector<HTMLElement>("[data-nf-diversity-change]");
+    const summaryEl = root.querySelector<HTMLElement>("[data-nf-summary]");
+
+    let state: FeedState = createInitialState();
+
+    function renderRound() {
+      const round = currentRound(state);
+      if (!round || !progressEl || !diversityEl || !tilesEl) return;
+
+      progressEl.textContent = `Round ${round.roundNumber} of 5`;
+      diversityEl.textContent = `Categories on screen this round: ${round.diversity} of 4`;
+
+      tilesEl.innerHTML = "";
+      for (const tile of round.tiles) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "nf-tile";
+        button.innerHTML = `
+          <span class="nf-tile-category">${categoryLabel(tile.category)}</span>
+          <strong class="nf-tile-title">${tile.title}</strong>
+        `;
+        button.addEventListener("click", () => choose(tile.category));
+        tilesEl.append(button);
+      }
+    }
+
+    function choose(category: Category) {
+      state = recordPick(state, category);
+      if (isComplete(state)) {
+        renderReveal();
+      } else {
+        renderRound();
+      }
+    }
+
+    function renderReveal() {
+      if (!roundEl || !revealEl || !diversityChangeEl || !summaryEl) return;
+      roundEl.hidden = true;
+      revealEl.hidden = false;
+
+      const summary = summarize(state);
+      diversityChangeEl.innerHTML = `<strong>Categories on screen went from ${summary.startingDiversity} of 4 to ${summary.endingDiversity} of 4</strong> over five rounds, following only your own picks.`;
+
+      summaryEl.innerHTML = "";
+      for (const pick of summary.picks) {
+        const li = document.createElement("li");
+        li.textContent = `Round ${pick.roundNumber}: you picked ${pick.label}.`;
+        summaryEl.append(li);
+      }
+    }
+
+    renderRound();
+  }
+</script>
+
+<style>
+  .nf-experiment {
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-block: 1.5rem;
+  }
+
+  .nf-progress {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8em;
+    opacity: 0.75;
+  }
+
+  .nf-diversity {
+    font-weight: 600;
+    margin-top: 0.25rem;
+  }
+
+  .nf-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .nf-tile {
+    flex: 1 1 10rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    text-align: left;
+    padding: 0.85rem;
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.4rem;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .nf-tile:hover {
+    border-color: currentColor;
+  }
+
+  .nf-tile-category {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    opacity: 0.75;
+  }
+
+  .nf-disclaimer {
+    font-size: 0.85em;
+    opacity: 0.8;
+  }
+</style>

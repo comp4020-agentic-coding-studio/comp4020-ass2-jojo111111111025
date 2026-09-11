@@ -1,0 +1,180 @@
+---
+// The Week 11 interaction: a sequence simulation, not a single choice. One
+// "lap" of the loop (cue -> episode -> autoplay -> reward -> recommendation)
+// is fixed; the only thing the visitor controls is *where* the same
+// intervention (declining autoplay) gets placed. Running all three points
+// side by side is what makes the comparison visible. The state machine
+// lives in src/scripts/breaking-the-loop.ts, unit-tested in
+// spec/breaking-the-loop.test.ts — this component only wires it to the DOM
+// and owns the rendering of each run's resulting sequence.
+---
+
+<div class="btl-experiment" data-btl-root>
+  <div class="btl-intro">
+    <p>
+      Below is one small, looping viewing session: a cue draws you in, the episode plays, autoplay
+      starts a countdown on its own, the ending pays off but leaves one thread open, and a new
+      recommendation appears — which is itself a new cue. Left alone, that loop repeats. Run it
+      three ways: with no intervention, with an early intervention, and with a late one. The
+      intervention itself is the same each time — declining the autoplay countdown — only its
+      timing changes.
+    </p>
+  </div>
+
+  <div class="btl-controls">
+    <button type="button" data-btl-run="none">Run with no intervention</button>
+    <button type="button" data-btl-run="early">Run with early intervention</button>
+    <button type="button" data-btl-run="late">Run with late intervention</button>
+  </div>
+
+  <div class="btl-runs" data-btl-runs></div>
+
+  <div class="btl-reveal" data-btl-reveal hidden>
+    <h3>What just happened</h3>
+    <p data-btl-comparison></p>
+    <p class="btl-disclaimer">
+      This is a fixed, deterministic teaching model with a made-up four-lap cap — not a simulation
+      of any real streaming product, and not a measurement of your own self-control. The same
+      small action (declining autoplay) produced a very different outcome depending purely on
+      where in the cycle it happened. That's a property of the loop's structure, not of how much
+      willpower the person interrupting it has.
+    </p>
+  </div>
+</div>
+
+<script>
+  import {
+    INTERVENTION_POINTS,
+    MAX_LAPS,
+    createInitialState,
+    isComplete,
+    recordTry,
+    runLoop,
+    type ExperimentState,
+    type InterventionPoint,
+    type RunResult,
+  } from "../scripts/breaking-the-loop";
+
+  const root = document.querySelector<HTMLElement>("[data-btl-root]");
+  if (root) {
+    const runsEl = root.querySelector<HTMLElement>("[data-btl-runs]");
+    const revealEl = root.querySelector<HTMLElement>("[data-btl-reveal]");
+    const comparisonEl = root.querySelector<HTMLElement>("[data-btl-comparison]");
+    const buttons = root.querySelectorAll<HTMLButtonElement>("[data-btl-run]");
+
+    let state: ExperimentState = createInitialState();
+    const results = new Map<InterventionPoint, RunResult>();
+
+    const LABEL: Record<InterventionPoint, string> = {
+      none: "No intervention",
+      early: "Early intervention",
+      late: "Late intervention",
+    };
+
+    function renderRun(point: InterventionPoint, result: RunResult) {
+      if (!runsEl) return;
+      const card = document.createElement("div");
+      card.className = "btl-run";
+
+      const heading = document.createElement("h4");
+      heading.textContent = `${LABEL[point]} — ${result.episodesWatched} of ${MAX_LAPS} episodes watched`;
+      card.append(heading);
+
+      const list = document.createElement("ol");
+      list.className = "btl-steps";
+      for (const step of result.steps) {
+        const item = document.createElement("li");
+        item.className = step.intervened ? "btl-step btl-step-stopped" : "btl-step";
+        item.innerHTML = `<strong>Lap ${step.lap} — ${step.label}.</strong> ${step.description}${
+          step.intervened ? " <em>(the intervention happens right here — the loop stops.)</em>" : ""
+        }`;
+        list.append(item);
+      }
+      card.append(list);
+      runsEl.append(card);
+    }
+
+    function renderReveal() {
+      if (!revealEl || !comparisonEl) return;
+      revealEl.hidden = false;
+      const none = results.get("none")!;
+      const early = results.get("early")!;
+      const late = results.get("late")!;
+      comparisonEl.innerHTML = `With no intervention the loop ran the full illustrative cap: <strong>${none.episodesWatched} episodes.</strong>
+        Intervening early cut that down to <strong>${early.episodesWatched} episode${early.episodesWatched === 1 ? "" : "s"}.</strong>
+        Intervening late still stopped the loop, but only after <strong>${late.episodesWatched} episodes</strong> had already played.`;
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const point = button.dataset.btlRun as InterventionPoint;
+        if (state.tried.includes(point)) return;
+
+        const result = runLoop(point);
+        results.set(point, result);
+        state = recordTry(state, point);
+
+        renderRun(point, result);
+        button.disabled = true;
+
+        if (isComplete(state)) {
+          INTERVENTION_POINTS.forEach((p) => {
+            const b = root!.querySelector<HTMLButtonElement>(`[data-btl-run="${p}"]`);
+            if (b) b.disabled = true;
+          });
+          renderReveal();
+        }
+      });
+    });
+  }
+</script>
+
+<style>
+  .btl-experiment {
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-block: 1.5rem;
+  }
+
+  .btl-controls {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+
+  .btl-runs {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.25rem;
+  }
+
+  .btl-run {
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.4rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .btl-run h4 {
+    margin: 0 0 0.5rem;
+  }
+
+  .btl-steps {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .btl-step-stopped {
+    font-weight: 600;
+  }
+
+  .btl-disclaimer {
+    font-size: 0.85em;
+    opacity: 0.8;
+  }
+</style>

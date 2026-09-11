@@ -1,0 +1,169 @@
+---
+// The Week 3 interaction: a ranking task, not a choice-and-reveal task. Four
+// candidate scene-endings start in a scrambled order; the visitor reorders
+// them from "least" to "most" it would pull them to keep watching using
+// move-up/move-down buttons (kept keyboard-operable rather than drag-and-
+// drop). The state machine lives in src/scripts/cliffhanger-ranking.ts,
+// unit-tested in spec/cliffhanger-ranking.test.ts — this component only
+// wires it to the DOM and never re-implements its logic.
+---
+
+<div class="cr-experiment" data-cr-root>
+  <div class="cr-intro" data-cr-intro>
+    <p>
+      Four ways the same scene could end. Reorder them from <strong>least</strong> to
+      <strong>most</strong> likely to make you keep watching — top of the list is "I could stop
+      here," bottom is "I need to see what happens." Use the arrow buttons; there's no drag-and-drop.
+    </p>
+  </div>
+
+  <ol class="cr-list" data-cr-list></ol>
+
+  <button type="button" data-cr-confirm>Confirm my ranking</button>
+
+  <div class="cr-reveal" data-cr-reveal hidden>
+    <h3>What just happened</h3>
+    <ol data-cr-summary></ol>
+    <p class="cr-disclaimer">
+      This is a demonstration with one participant — you — not a controlled study. The "expected"
+      order below is this page's own illustrative info-gap labels, not a scored answer key, and
+      four endings ranked once by one visitor can't tell you anything reliable about how
+      "susceptible to cliffhangers" you personally are.
+    </p>
+  </div>
+</div>
+
+<script>
+  import {
+    ENDINGS,
+    confirmRanking,
+    createInitialState,
+    isComplete,
+    moveDown,
+    moveUp,
+    summarize,
+    type RankingState,
+  } from "../scripts/cliffhanger-ranking";
+
+  const root = document.querySelector<HTMLElement>("[data-cr-root]");
+  if (root) {
+    const listEl = root.querySelector<HTMLOListElement>("[data-cr-list]");
+    const confirmButton = root.querySelector<HTMLButtonElement>("[data-cr-confirm]");
+    const revealEl = root.querySelector<HTMLElement>("[data-cr-reveal]");
+    const summaryEl = root.querySelector<HTMLElement>("[data-cr-summary]");
+
+    let state: RankingState = createInitialState();
+
+    function findEnding(id: string) {
+      return ENDINGS.find((e) => e.id === id)!;
+    }
+
+    function renderList() {
+      if (!listEl) return;
+      listEl.innerHTML = "";
+      state.order.forEach((id, index) => {
+        const ending = findEnding(id);
+        const item = document.createElement("li");
+        item.className = "cr-item";
+        item.innerHTML = `
+          <span class="cr-item-text">
+            <strong>${ending.label}.</strong> ${ending.sceneText}
+          </span>
+          <span class="cr-item-controls">
+            <button type="button" data-cr-up aria-label="Move up">▲</button>
+            <button type="button" data-cr-down aria-label="Move down">▼</button>
+          </span>
+        `;
+        item.querySelector<HTMLButtonElement>("[data-cr-up]")!.disabled = index === 0;
+        item.querySelector<HTMLButtonElement>("[data-cr-down]")!.disabled = index === state.order.length - 1;
+        item.querySelector("[data-cr-up]")?.addEventListener("click", () => {
+          state = moveUp(state, index);
+          renderList();
+        });
+        item.querySelector("[data-cr-down]")?.addEventListener("click", () => {
+          state = moveDown(state, index);
+          renderList();
+        });
+        listEl.append(item);
+      });
+    }
+
+    function renderReveal() {
+      if (!revealEl || !summaryEl) return;
+      revealEl.hidden = false;
+      if (confirmButton) confirmButton.hidden = true;
+
+      const summary = summarize(state);
+      summaryEl.innerHTML = "";
+
+      const yourOrder = document.createElement("li");
+      yourOrder.innerHTML = `<strong>Your order:</strong> ${summary.order.map((item) => item.label).join(" → ")}`;
+      summaryEl.append(yourOrder);
+
+      const expectedLabels = summary.expectedOrder.map((id) => findEnding(id).label);
+      const expected = document.createElement("li");
+      expected.innerHTML = `<strong>This page's illustrative order (least to most info withheld):</strong> ${expectedLabels.join(" → ")}`;
+      summaryEl.append(expected);
+
+      const agreement = document.createElement("li");
+      agreement.innerHTML = `<strong>Agreement:</strong> ${summary.concordantPairs} of ${summary.totalPairs} pairs matched that order.`;
+      summaryEl.append(agreement);
+    }
+
+    confirmButton?.addEventListener("click", () => {
+      state = confirmRanking(state);
+      if (isComplete(state)) renderReveal();
+    });
+
+    renderList();
+  }
+</script>
+
+<style>
+  .cr-experiment {
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-block: 1.5rem;
+  }
+
+  .cr-list {
+    list-style: none;
+    margin: 1rem 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .cr-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem;
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.4rem;
+  }
+
+  .cr-item-text {
+    flex: 1;
+  }
+
+  .cr-item-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .cr-item-controls button {
+    font: inherit;
+    line-height: 1;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .cr-disclaimer {
+    font-size: 0.85em;
+    opacity: 0.8;
+  }
+</style>

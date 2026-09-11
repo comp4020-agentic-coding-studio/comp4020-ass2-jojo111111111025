@@ -1,0 +1,141 @@
+---
+// The Week 12 interaction: a synthesis, not a new mechanic. Six fixed
+// scenes, one per mechanism this course already covered (Weeks 3-5 and
+// 7-10), are shown one at a time. The visitor identifies which mechanism
+// each scene is using; the reveal then shows the fixed reinforcement chain
+// regardless of how many were guessed correctly, because the point is how
+// the six mechanisms hand off to each other across one session, not a
+// score. The state machine lives in src/scripts/final-episode.ts,
+// unit-tested in spec/final-episode.test.ts — this component only wires it
+// to the DOM.
+---
+
+<div class="fe-experiment" data-fe-root>
+  <div class="fe-session" data-fe-session>
+    <p class="fe-scene" data-fe-scene></p>
+    <p class="fe-prompt">Which mechanism is this moment using?</p>
+    <div class="fe-choices" data-fe-choices></div>
+    <p class="fe-progress" data-fe-progress></p>
+  </div>
+
+  <div class="fe-reveal" data-fe-reveal hidden>
+    <h3>The full session, chained together</h3>
+    <p data-fe-score></p>
+    <ol class="fe-chain" data-fe-chain></ol>
+    <p class="fe-disclaimer">
+      The scenes, the answer key, and the connective sentences above are this page's own fixed,
+      illustrative teaching model — not a claim about any real streaming product's design, and your
+      score isn't a measurement of how susceptible you are to any of these mechanisms. What the
+      chain is meant to show is structural: each mechanism's effect can hand off into the next
+      one's starting condition, across a single ordinary session, not just in isolation the way
+      each week studied it on its own.
+    </p>
+  </div>
+</div>
+
+<script>
+  import {
+    MECHANISMS,
+    createInitialState,
+    currentMoment,
+    isComplete,
+    selectMechanism,
+    synthesize,
+    type MechanismId,
+    type SessionState,
+  } from "../scripts/final-episode";
+
+  const root = document.querySelector<HTMLElement>("[data-fe-root]");
+  if (root) {
+    const sessionEl = root.querySelector<HTMLElement>("[data-fe-session]");
+    const sceneEl = root.querySelector<HTMLElement>("[data-fe-scene]");
+    const choicesEl = root.querySelector<HTMLElement>("[data-fe-choices]");
+    const progressEl = root.querySelector<HTMLElement>("[data-fe-progress]");
+    const revealEl = root.querySelector<HTMLElement>("[data-fe-reveal]");
+    const scoreEl = root.querySelector<HTMLElement>("[data-fe-score]");
+    const chainEl = root.querySelector<HTMLElement>("[data-fe-chain]");
+
+    let state: SessionState = createInitialState();
+
+    function renderMoment() {
+      if (!sceneEl || !choicesEl || !progressEl) return;
+      const moment = currentMoment(state);
+      if (!moment) return;
+
+      sceneEl.textContent = moment.sceneText;
+      progressEl.textContent = `Moment ${state.momentIndex + 1} of 6`;
+      choicesEl.innerHTML = "";
+
+      for (const mechanism of MECHANISMS) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = mechanism.label;
+        button.title = mechanism.description;
+        button.addEventListener("click", () => {
+          state = selectMechanism(state, mechanism.id as MechanismId);
+          if (isComplete(state)) {
+            renderReveal();
+          } else {
+            renderMoment();
+          }
+        });
+        choicesEl.append(button);
+      }
+    }
+
+    function renderReveal() {
+      if (!sessionEl || !revealEl || !scoreEl || !chainEl) return;
+      sessionEl.hidden = true;
+      revealEl.hidden = false;
+
+      const summary = synthesize(state);
+      scoreEl.innerHTML = `You identified <strong>${summary.correctCount} of ${summary.totalMoments}</strong> correctly. Here's how all six mechanisms actually chain together across the session, whether or not each guess landed:`;
+
+      chainEl.innerHTML = "";
+      summary.chain.forEach((link) => {
+        const item = document.createElement("li");
+        item.innerHTML = `<strong>${link.mechanismLabel}.</strong> ${link.sceneText} — this ${link.connective}.`;
+        chainEl.append(item);
+      });
+    }
+
+    renderMoment();
+  }
+</script>
+
+<style>
+  .fe-experiment {
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-block: 1.5rem;
+  }
+
+  .fe-scene {
+    font-weight: 600;
+  }
+
+  .fe-choices {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin: 0.75rem 0;
+  }
+
+  .fe-progress {
+    font-size: 0.85em;
+    opacity: 0.8;
+  }
+
+  .fe-chain {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding-left: 1.25rem;
+  }
+
+  .fe-disclaimer {
+    font-size: 0.85em;
+    opacity: 0.8;
+  }
+</style>

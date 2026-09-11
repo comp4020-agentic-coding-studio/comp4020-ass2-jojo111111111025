@@ -1,0 +1,160 @@
+---
+// The Week 5 interaction: a single "check" button, pressed repeatedly across
+// two fixed-length blocks. Each press either reveals a reward or doesn't,
+// following a precomputed pattern — never a live random draw — and both
+// blocks award the same total number of rewards. The state machine lives in
+// src/scripts/reward-schedule.ts, unit-tested in spec/reward-schedule.test.ts.
+// This component only wires that logic to the DOM and never re-implements
+// it, appending a result chip per check rather than replacing the screen —
+// the accumulating row is the visible record of the pattern.
+---
+
+<div class="rs-experiment" data-rs-root>
+  <div class="rs-intro" data-rs-intro>
+    <p>
+      Two rounds of checking for a new episode. Each round is the same length, and both hand out
+      the same total number of "new episode" rewards — only the timing differs. Press the button
+      each time you're ready to check.
+    </p>
+  </div>
+
+  <div class="rs-block" data-rs-block>
+    <p class="rs-progress" data-rs-progress></p>
+    <button type="button" data-rs-check>Check for a new episode</button>
+    <div class="rs-chips" data-rs-chips role="list" aria-live="polite"></div>
+  </div>
+
+  <div class="rs-reveal" data-rs-reveal hidden>
+    <h3>What just happened</h3>
+    <ol data-rs-summary></ol>
+    <p class="rs-disclaimer">
+      This is a demonstration with one participant — you — not a controlled study, and both
+      patterns above were fixed in advance, not live random draws. Where the checks landed for you
+      is illustrative, not a measurement of your own persistence or self-control.
+    </p>
+  </div>
+</div>
+
+<script>
+  import {
+    createInitialState,
+    currentBlock,
+    isBlockComplete,
+    isComplete,
+    recordCheck,
+    summarize,
+    type ExperimentState,
+  } from "../scripts/reward-schedule";
+
+  const root = document.querySelector<HTMLElement>("[data-rs-root]");
+  if (root) {
+    const progressEl = root.querySelector<HTMLElement>("[data-rs-progress]");
+    const checkButton = root.querySelector<HTMLButtonElement>("[data-rs-check]");
+    const chipsEl = root.querySelector<HTMLElement>("[data-rs-chips]");
+    const blockEl = root.querySelector<HTMLElement>("[data-rs-block]");
+    const revealEl = root.querySelector<HTMLElement>("[data-rs-reveal]");
+    const summaryEl = root.querySelector<HTMLElement>("[data-rs-summary]");
+
+    let state: ExperimentState = createInitialState();
+
+    const SCHEDULE_LABEL: Record<string, string> = {
+      fixed: "fixed schedule",
+      variable: "variable schedule",
+    };
+
+    function renderProgress() {
+      const block = currentBlock(state);
+      if (!progressEl || !block) return;
+      progressEl.textContent = `${SCHEDULE_LABEL[block.schedule]} — check ${state.checkIndex + 1} of ${block.pattern.length}`;
+    }
+
+    function renderChips(blockId: string) {
+      if (!chipsEl) return;
+      chipsEl.innerHTML = "";
+      for (const response of state.responses.filter((r) => r.blockId === blockId)) {
+        const chip = document.createElement("span");
+        chip.className = response.rewarded ? "rs-chip rs-chip-reward" : "rs-chip rs-chip-empty";
+        chip.setAttribute("role", "listitem");
+        chip.textContent = response.rewarded ? "New episode!" : "Nothing new";
+        chipsEl.append(chip);
+      }
+    }
+
+    function renderReveal() {
+      if (!blockEl || !revealEl || !summaryEl) return;
+      blockEl.hidden = true;
+      revealEl.hidden = false;
+
+      const summary = summarize(state);
+      summaryEl.innerHTML = "";
+      for (const item of summary) {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${SCHEDULE_LABEL[item.schedule]}:</strong> ${item.totalRewards} rewards across ${item.totalChecks} checks; longest stretch with nothing new was ${item.longestGap} checks in a row.`;
+        summaryEl.append(li);
+      }
+    }
+
+    checkButton?.addEventListener("click", () => {
+      const blockBefore = currentBlock(state);
+      state = recordCheck(state);
+      if (!blockBefore) return;
+
+      if (isComplete(state)) {
+        renderReveal();
+      } else {
+        renderChips(currentBlock(state)!.id === blockBefore.id ? blockBefore.id : currentBlock(state)!.id);
+        renderProgress();
+      }
+    });
+
+    renderProgress();
+  }
+</script>
+
+<style>
+  .rs-experiment {
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-block: 1.5rem;
+  }
+
+  .rs-progress {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8em;
+    opacity: 0.75;
+  }
+
+  .rs-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    min-height: 2rem;
+  }
+
+  .rs-chip {
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.85em;
+    border: 1px solid var(--at-color-border, #ccc);
+  }
+
+  .rs-chip-reward {
+    font-weight: 600;
+  }
+
+  .rs-chip-empty {
+    opacity: 0.6;
+  }
+
+  .rs-block button {
+    margin-top: 0.25rem;
+  }
+
+  .rs-disclaimer {
+    font-size: 0.85em;
+    opacity: 0.8;
+  }
+</style>

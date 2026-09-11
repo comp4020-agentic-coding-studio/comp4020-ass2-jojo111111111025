@@ -1,0 +1,174 @@
+---
+// The Week 9 interaction: four rounds, always the same two, otherwise
+// interchangeable shows side by side. One round has no cue at all; the
+// others attach either a crowd-size cue or a named-friend cue to one slot,
+// alternating which slot carries it so the pattern isn't "people pick the
+// left tile." The state machine lives in src/scripts/social-signal.ts,
+// unit-tested in spec/social-signal.test.ts — this component only wires it
+// to the DOM.
+---
+
+<div class="ss-experiment" data-ss-root>
+  <div class="ss-intro" data-ss-intro>
+    <p>
+      The same two shows, four times in a row. Nothing about either show ever changes — only
+      whether, and how, one of them is flagged.
+    </p>
+    <button type="button" data-ss-start>Start</button>
+  </div>
+
+  <div class="ss-round" data-ss-round hidden>
+    <p class="ss-progress" data-ss-progress></p>
+    <div class="ss-pair" data-ss-pair></div>
+  </div>
+
+  <div class="ss-reveal" data-ss-reveal hidden>
+    <h3>What just happened</h3>
+    <ol data-ss-summary></ol>
+    <p class="ss-disclaimer">
+      This is a demonstration with one participant — you — not a controlled study, and the cued
+      slot moves between left and right specifically so this isn't measuring "which side you tend
+      to click." One person's four picks aren't evidence about how susceptible you personally are
+      to social cues — only that the two cue types here can move a choice at all, independent of
+      the (identical) shows attached to them.
+    </p>
+  </div>
+</div>
+
+<script>
+  import {
+    SHOWS,
+    createInitialState,
+    cueTextFor,
+    currentRound,
+    isComplete,
+    recordPick,
+    summarize,
+    type ExperimentState,
+    type Slot,
+  } from "../scripts/social-signal";
+
+  const root = document.querySelector<HTMLElement>("[data-ss-root]");
+  if (root) {
+    const introEl = root.querySelector<HTMLElement>("[data-ss-intro]");
+    const startButton = root.querySelector<HTMLButtonElement>("[data-ss-start]");
+    const roundEl = root.querySelector<HTMLElement>("[data-ss-round]");
+    const progressEl = root.querySelector<HTMLElement>("[data-ss-progress]");
+    const pairEl = root.querySelector<HTMLElement>("[data-ss-pair]");
+    const revealEl = root.querySelector<HTMLElement>("[data-ss-reveal]");
+    const summaryEl = root.querySelector<HTMLElement>("[data-ss-summary]");
+
+    let state: ExperimentState = createInitialState();
+
+    function renderRound() {
+      const round = currentRound(state);
+      if (!round || !progressEl || !pairEl) return;
+
+      progressEl.textContent = `Round ${state.roundIndex + 1} of 4`;
+      pairEl.innerHTML = "";
+
+      (["left", "right"] as const).forEach((slot, index) => {
+        const show = SHOWS[index];
+        const cue = slot === round.cueSlot ? cueTextFor(round.cueType) : null;
+        const tile = document.createElement("button");
+        tile.type = "button";
+        tile.className = "ss-tile";
+        tile.innerHTML = `
+          ${cue ? `<span class="ss-cue">${cue}</span>` : ""}
+          <strong class="ss-tile-title">${show.title}</strong>
+          <span class="ss-tile-synopsis">${show.synopsis}</span>
+        `;
+        tile.addEventListener("click", () => choose(slot));
+        pairEl.append(tile);
+      });
+    }
+
+    function choose(slot: Slot) {
+      state = recordPick(state, slot);
+      if (isComplete(state)) {
+        renderReveal();
+      } else {
+        renderRound();
+      }
+    }
+
+    function renderReveal() {
+      if (!roundEl || !revealEl || !summaryEl) return;
+      roundEl.hidden = true;
+      revealEl.hidden = false;
+
+      const summary = summarize(state);
+      summaryEl.innerHTML = "";
+      for (const item of summary) {
+        const li = document.createElement("li");
+        const pickText =
+          item.pickedCuedSlot === null
+            ? `you picked the ${item.pickedSlot} option`
+            : `you picked the ${item.pickedCuedSlot ? "cued" : "uncued"} option`;
+        li.innerHTML = `<strong>Round ${item.roundNumber}:</strong> ${pickText}. ${item.note}`;
+        summaryEl.append(li);
+      }
+    }
+
+    startButton?.addEventListener("click", () => {
+      if (!introEl || !roundEl) return;
+      introEl.hidden = true;
+      roundEl.hidden = false;
+      renderRound();
+    });
+  }
+</script>
+
+<style>
+  .ss-experiment {
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-block: 1.5rem;
+  }
+
+  .ss-pair {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .ss-tile {
+    flex: 1 1 12rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    text-align: left;
+    padding: 0.85rem;
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.4rem;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .ss-tile:hover {
+    border-color: currentColor;
+  }
+
+  .ss-cue {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    opacity: 0.85;
+    font-weight: 600;
+  }
+
+  .ss-progress {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8em;
+    opacity: 0.75;
+  }
+
+  .ss-disclaimer {
+    font-size: 0.85em;
+    opacity: 0.8;
+  }
+</style>

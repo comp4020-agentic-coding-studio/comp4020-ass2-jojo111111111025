@@ -1,0 +1,110 @@
+---
+title: Autoplay
+description:
+  A cliffhanger still needs you to decide to keep watching. Autoplay removes
+  that decision entirely. This week is about what changes when "continue" is
+  the default and "stop" is the thing you have to do.
+week: 4
+date: 2027-03-15
+teachers:
+  - idris-fenn
+psychologicalQuestion: What changes when you have to act to stop something, instead of act to continue it?
+previouslyOn:
+  Last week was about a cliffhanger that still requires you to decide,
+  mid-pull, whether to keep watching. This week removes that decision
+  entirely and asks what's left once continuing needs no action at all.
+nextTease:
+  Autoplay decides one episode at a time. What happens once nobody is
+  deciding at any scale, and "one more" quietly becomes an entire season —
+  that's next episode's question.
+---
+
+import AutoplayWindowExperiment from "../../components/AutoplayWindowExperiment.astro";
+
+## This week's question
+
+Every earlier week in this course has assumed the same shape: watching
+continues because something makes *continuing* attractive — effort, an open
+question, a badge. Autoplay is a different kind of design decision entirely.
+It doesn't need to make continuing attractive. It only needs to make
+*stopping* into a task, and let default behaviour do the rest.
+
+## Defaults do work that persuasion doesn't have to
+
+Behavioural research on defaults is blunt about this: whatever happens when
+a person does nothing tends to keep happening, regardless of whether they'd
+have chosen it if asked directly. This isn't about laziness or lack of
+willpower — reversing a default takes a deliberate act, and deliberate acts
+compete with everything else going on in a moment (tiredness, distraction, a
+countdown that's already halfway gone). Every one of those small costs makes
+"just let it happen" slightly more likely to win, one episode at a time.
+
+Compare that to Week 1's friction condition, where *both* options — continue
+and stop — required a click, and a temporary disable on one button was
+enough to nudge behaviour. Autoplay goes a step further: continuing needs no
+action whatsoever. The only thing that ever requires effort is the option
+the interface would prefer you not take.
+
+## A familiar scene
+
+A ten-second countdown appears at the bottom of the screen: "Next episode
+starts automatically." The button that would stop it is right there, clearly
+visible, not hidden or disabled — nothing is stopping you from clicking it
+except the fact that not clicking anything is *also* an option, and it's the
+one that requires nothing from you at all. Ten seconds later, the next
+episode has already started, and no decision ever consciously got made.
+
+## The interactive experiment: The Ten-Second Window
+
+Below are three rounds. In each one, something is about to play
+automatically after a real countdown — the countdown is exactly the same
+length every time. Some rounds tell you up front that it's about to happen;
+some don't. Some make the "stop" button available right away; one makes you
+wait a moment before it appears. Go with what actually happens in the
+moment, not what you'd plan to do in the abstract.
+
+<AutoplayWindowExperiment />
+
+## What just happened?
+
+- **Round 1 was the baseline.** The stop control was visible and available
+  the entire time, and the countdown was announced clearly. Whatever
+  happened here is what the other two rounds are compared against.
+- **Round 2 buried the control**, not the countdown. The same real length of
+  time ran, announced the same way — but the button that would stop it
+  stayed unreachable for the first couple of seconds. If autoplay won this
+  round when it didn't win round 1, that's the mechanism in miniature: the
+  window didn't get shorter, reaching the control just cost more of it.
+- **Round 3 stayed silent.** The stop control was just as reachable as
+  round 1, immediately — but nothing announced up front that anything was
+  about to happen automatically at all. If autoplay won here, that isolates
+  a second, separate lever from round 2's: not "can you reach the button,"
+  but "did you even know there was a countdown to interrupt."
+
+That's this week's question, answered in miniature: the countdown itself
+never changed across all three rounds. What changed was how much it cost, in
+attention or reach, to exercise the option that was technically available
+the entire time.
+
+**What this demonstration can't tell you:** three rounds from one visitor
+say nothing about your own self-control or your susceptibility to autoplay
+specifically — the rounds ran in a fixed order, the "silent" round loses some
+of its effect for anyone reading this debrief before playing it, and one
+person's outcome is not a controlled comparison. What repeated,
+controlled studies of default effects (not this demo) actually show is that
+burying or delaying an opt-out shifts outcomes on average across many
+people — not that any one round's result says something stable about you.
+
+## Reflection
+
+Think about the last time you noticed an episode had started playing before
+you'd decided to watch it. In that moment, was the "stop" option genuinely
+unreachable — or was it reachable, but not something you were thinking about
+until after the decision had already been made for you?
+
+## Next episode
+
+This week was about one autoplay countdown at a time — one decision quietly
+skipped. It said nothing about what happens once dozens of those defaults
+stack up across an entire evening, and "one more episode" turns into "the
+whole season, somehow." That's next episode's question.

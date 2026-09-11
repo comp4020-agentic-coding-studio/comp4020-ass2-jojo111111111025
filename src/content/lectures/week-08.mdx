@@ -1,0 +1,106 @@
+---
+title: Recommendation Algorithms
+description:
+  A feed doesn't have to remove your choices to narrow your world — it only
+  has to keep offering you more of whatever you already picked. This week is
+  about what that quietly does to what you even get shown.
+week: 8
+date: 2027-04-12
+teachers:
+  - idris-fenn
+psychologicalQuestion: Does picking what you already like change what you're offered next?
+previouslyOn:
+  Last week was about a running total that no one, including you, was
+  keeping track of during a binge. This week is about something else that
+  goes untracked in the background — what a feed quietly learns from every
+  pick you make, whether you notice or not.
+nextTease:
+  A narrowing feed still lets you choose from whatever it shows you. Next
+  episode is about a choice that isn't really private at all — what happens
+  to a pick once you can see what other people chose first.
+---
+
+import NarrowingFeedExperiment from "../../components/NarrowingFeedExperiment.astro";
+
+## This week's question
+
+A recommendation feed never has to say no to you. It doesn't need to block a
+genre or remove an option to shape what you watch — it only needs to notice
+what you already picked, and quietly offer you more of that next time. Do
+five small, individually reasonable picks in a row change what you're even
+being shown by the sixth?
+
+## Feedback loops don't need intent to narrow
+
+The mechanism here doesn't require a feed to be trying to trap you. A simple
+rule — "show more of what this person picked before" — is enough on its own,
+because every pick becomes an input to the next round's options, and the
+next round's options shape what's *available* to pick from. There's no step
+where variety gets deliberately removed. There's just a rule that responds
+to your last pick, applied repeatedly, and repetition is what does the
+narrowing.
+
+This is worth separating clearly from taste. Liking comedies more than
+documentaries and ending up shown mostly comedies looks the same from the
+outside as a feed narrowing on its own momentum, independent of whether your
+underlying interest ever actually changed. The two get tangled together
+constantly — genuine preference feeding a system that then amplifies exactly
+that preference until it looks less like a preference and more like the
+whole menu.
+
+## A familiar scene
+
+You watch one workplace comedy on a whim, on a slow evening. Within a few
+sessions, your home screen is visibly heavier on comedies than it used to
+be — not because you told it your genre preferences, and not because you
+watched anything else in between. One pick, repeated back to you as more
+of the same, is often all it takes to notice the shape of the feed itself
+start to shift.
+
+## The interactive experiment: The Narrowing Feed
+
+Below is a small, five-round version of that loop. Each round shows four
+shows from four categories; pick one. The next round's mix updates based
+only on what you just picked, following a fixed, simplified rule — not a
+real streaming algorithm, just enough of the same shape to make the
+mechanism visible.
+
+<NarrowingFeedExperiment />
+
+## What just happened?
+
+Every round's tile mix was generated purely from your own pick history, fed
+through a fixed weighting rule set in advance — nothing here adapted to
+guess your "real" taste, and no live model or randomness was involved. If
+the categories on screen narrowed noticeably by round five, that's the
+mechanism working exactly as designed: a handful of individually small picks
+compounding into a visibly smaller menu, with no single step where anyone
+decided to remove an option.
+
+If you deliberately varied your picks across categories, you likely saw the
+mix stay closer to its starting diversity — worth noticing, since it shows
+the narrowing isn't inevitable, only a predictable response to a *pattern*
+of picks, not to any one pick in isolation.
+
+**What this demonstration can't tell you:** a four-category, five-round toy
+catalogue with a fixed formula is a teaching simplification, not the
+algorithm any real streaming platform actually runs, and your reaction to it
+says nothing about your real-world viewing habits or how "in a bubble" you
+personally are. What it can show, reliably, is the shape of the mechanism —
+that this kind of feedback loop narrows a feed mechanically, given nothing
+more than a rule and repetition.
+
+## Reflection
+
+Think about your own most-used streaming or video app's home screen right
+now. If you tried to remember what it looked like the very first time you
+used it, would you expect it to look meaningfully different from today's —
+and if so, was that difference something you asked for, or something that
+accumulated from picks you made without thinking about where they'd lead?
+
+## Next episode
+
+This week was about a feed narrowing in private, based only on your own
+picks. It said nothing about what changes once a pick isn't private at
+all — once you can see, before choosing, what other people already chose.
+That's next episode's question.

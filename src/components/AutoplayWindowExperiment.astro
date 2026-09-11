@@ -1,0 +1,204 @@
+---
+// The Week 4 interaction: three rounds, each a real countdown toward
+// "autoplay" that only the visitor's own click can interrupt. The countdown
+// length is identical across all three rounds by design — only how
+// reachable/announced the interrupt control is changes. The state machine
+// (round config, outcome classification, summary) lives in
+// src/scripts/autoplay-window.ts, unit-tested in spec/autoplay-window.test.ts.
+// This component owns the only DOM- and clock-dependent part: it measures
+// real elapsed time with performance.now()/setInterval/setTimeout and passes
+// the measured result into the pure logic as a plain argument — it never
+// re-implements the classification or completion logic itself.
+---
+
+<div class="aw-experiment" data-aw-root>
+  <div class="aw-intro" data-aw-intro>
+    <p>
+      Three short rounds. In each one, something is about to play automatically unless you stop it.
+      The countdown itself is exactly the same length every time — pay attention to what else
+      changes.
+    </p>
+    <button type="button" data-aw-start>Start</button>
+  </div>
+
+  <div class="aw-round" data-aw-round hidden>
+    <p class="aw-progress" data-aw-progress></p>
+    <p class="aw-announcement" data-aw-announcement hidden></p>
+    <div class="aw-screen" data-aw-screen>Now playing: Episode</div>
+    <button type="button" data-aw-interrupt hidden>Stop autoplay</button>
+  </div>
+
+  <div class="aw-reveal" data-aw-reveal hidden>
+    <h3>What just happened</h3>
+    <ol data-aw-summary></ol>
+    <p class="aw-disclaimer">
+      This is a demonstration with one participant — you — not a controlled study. Three rounds
+      from one visitor can't tell you anything about your own self-control; what it can show is
+      that the same real countdown produces different outcomes depending only on how reachable and
+      how announced the "stop" option is.
+    </p>
+  </div>
+</div>
+
+<script>
+  import {
+    autoplayedCount,
+    createInitialState,
+    currentRound,
+    isComplete,
+    recordOutcome,
+    summarize,
+    type ExperimentState,
+  } from "../scripts/autoplay-window";
+
+  const root = document.querySelector<HTMLElement>("[data-aw-root]");
+  if (root) {
+    const introEl = root.querySelector<HTMLElement>("[data-aw-intro]");
+    const startButton = root.querySelector<HTMLButtonElement>("[data-aw-start]");
+    const roundEl = root.querySelector<HTMLElement>("[data-aw-round]");
+    const progressEl = root.querySelector<HTMLElement>("[data-aw-progress]");
+    const announcementEl = root.querySelector<HTMLElement>("[data-aw-announcement]");
+    const interruptButton = root.querySelector<HTMLButtonElement>("[data-aw-interrupt]");
+    const revealEl = root.querySelector<HTMLElement>("[data-aw-reveal]");
+    const summaryEl = root.querySelector<HTMLElement>("[data-aw-summary]");
+
+    let state: ExperimentState = createInitialState();
+    let countdownStartedAt = 0;
+    let tickTimer: ReturnType<typeof setInterval> | undefined;
+    let autoplayTimer: ReturnType<typeof setTimeout> | undefined;
+    let revealTimer: ReturnType<typeof setTimeout> | undefined;
+    let settled = false;
+
+    function renderRound() {
+      const round = currentRound(state);
+      if (!round || !progressEl || !announcementEl || !interruptButton) return;
+
+      settled = false;
+      progressEl.textContent = `Round ${state.roundIndex + 1} of 3`;
+
+      if (round.announced) {
+        announcementEl.hidden = false;
+        announcementEl.textContent = `Next up starts automatically in ${Math.round(round.countdownMs / 1000)} seconds.`;
+      } else {
+        announcementEl.hidden = true;
+        announcementEl.textContent = "";
+      }
+
+      interruptButton.hidden = round.controlRevealDelayMs > 0;
+      interruptButton.disabled = false;
+      interruptButton.onclick = () => interrupt(round.countdownMs);
+
+      countdownStartedAt = performance.now();
+
+      clearTimeout(revealTimer);
+      if (round.controlRevealDelayMs > 0) {
+        revealTimer = setTimeout(() => {
+          interruptButton.hidden = false;
+        }, round.controlRevealDelayMs);
+      }
+
+      clearInterval(tickTimer);
+      if (round.announced) {
+        tickTimer = setInterval(() => {
+          const elapsed = performance.now() - countdownStartedAt;
+          const remaining = Math.max(0, round.countdownMs - elapsed);
+          announcementEl.textContent = `Next up starts automatically in ${Math.ceil(remaining / 1000)} seconds.`;
+        }, 250);
+      }
+
+      clearTimeout(autoplayTimer);
+      autoplayTimer = setTimeout(() => settle(null), round.countdownMs);
+    }
+
+    function interrupt(countdownMs: number) {
+      const elapsed = performance.now() - countdownStartedAt;
+      settle(countdownMs - elapsed);
+    }
+
+    function settle(remainingMsAtInterrupt: number | null) {
+      if (settled) return;
+      settled = true;
+      clearInterval(tickTimer);
+      clearTimeout(autoplayTimer);
+      clearTimeout(revealTimer);
+
+      state = recordOutcome(state, remainingMsAtInterrupt);
+
+      if (isComplete(state)) {
+        renderReveal();
+      } else {
+        renderRound();
+      }
+    }
+
+    function renderReveal() {
+      if (!roundEl || !revealEl || !summaryEl) return;
+      roundEl.hidden = true;
+      revealEl.hidden = false;
+
+      const OUTCOME_LABEL: Record<string, string> = {
+        "interrupted-early": "you stopped it with most of the window left",
+        "interrupted-late": "you stopped it near the very end",
+        autoplayed: "it played automatically before you stopped it",
+      };
+
+      const summary = summarize(state);
+      summaryEl.innerHTML = "";
+      for (const item of summary) {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>Round ${item.roundNumber}:</strong> ${OUTCOME_LABEL[item.outcome]}. ${item.note}`;
+        summaryEl.append(li);
+      }
+
+      const tally = document.createElement("li");
+      tally.innerHTML = `<strong>Overall:</strong> autoplay won ${autoplayedCount(state)} of 3 rounds.`;
+      summaryEl.append(tally);
+    }
+
+    startButton?.addEventListener("click", () => {
+      if (!introEl || !roundEl) return;
+      introEl.hidden = true;
+      roundEl.hidden = false;
+      renderRound();
+    });
+  }
+</script>
+
+<style>
+  .aw-experiment {
+    border: 1px solid var(--at-color-border, #ccc);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-block: 1.5rem;
+  }
+
+  .aw-screen {
+    margin-top: 0.75rem;
+    min-height: 3rem;
+    display: flex;
+    align-items: center;
+    padding: 0 0.75rem;
+    background: var(--at-color-surface-alt, #f0f0f0);
+    border-radius: 0.4rem;
+  }
+
+  .aw-announcement {
+    font-weight: 600;
+  }
+
+  .aw-progress {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8em;
+    opacity: 0.75;
+  }
+
+  .aw-round button {
+    margin-top: 0.75rem;
+  }
+
+  .aw-disclaimer {
+    font-size: 0.85em;
+    opacity: 0.8;
+  }
+</style>
