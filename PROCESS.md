@@ -14,8 +14,9 @@ cover every deliverable.
 
 A course website for **The Psychology of "One More Episode"** — a fictional
 Slop University course whose central thesis is that the site itself behaves
-like the streaming systems it teaches students to critique. Nothing is built
-yet; this entry covers the architecture phase before any page exists.
+like the streaming systems it teaches students to critique. One week (Week 1
+— The One More Episode Effect) is built, schema-formalised, and verified
+end to end; the other eleven are deliberately not started yet.
 
 ## How I got here
 
@@ -83,9 +84,70 @@ that shared pattern before diversifying into weeks 4/6/9's bespoke widgets.
 
 This phase's commit contains `CLAUDE.md` (the durable version of the
 decisions above, for whichever session builds next) and this `PROCESS.md`
-entry — no site content yet. Next: Phase 2, extend `content.config.ts` with
-the episode-specific frontmatter fields named above, then prototype the
-Week 1 page (Phase 3) before touching the other eleven weeks.
+entry — no site content yet.
+
+### Phase 2 — formalise the episode frontmatter fields
+
+Landed inside Phase 3's commit rather than as its own, once the page shape
+below made clear which fields were actually load-bearing: the three
+narrative fields Phase 1 named (`psychologicalQuestion`, `previouslyOn`,
+`nextTease`) were added to the `lectures` schema in `content.config.ts` as
+optional trimmed strings
+([`68308d3`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-jojo111111111025/commit/68308d3)).
+Optional, because eleven of the twelve weeks don't have them yet and a
+missing narrative field should be a silent gap, not a schema-breaking one.
+This is the "formalise... for real validation instead of silent typos" step
+CLAUDE.md called for, scoped to exactly the fields Phase 1's page-shape
+decision needed — not a speculative schema pass.
+
+### Phase 3 — prototype Week 1, then check it actually works
+
+Built `src/content/lectures/week-01.mdx` against the six-element checklist
+CLAUDE.md sets for every week's page (question / explanation / example /
+interaction / reflection / prev-next), the `OneMoreEpisodeExperiment`
+interaction (`src/components/OneMoreEpisodeExperiment.astro`, state machine
+in `src/scripts/one-more-episode.ts`), and unit tests for that state machine
+(`spec/one-more-episode.test.ts`) — all in
+[`68308d3`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-jojo111111111025/commit/68308d3).
+
+The interaction is three rounds of the same "keep watching / stop" choice
+under three different interface conditions: an unmanipulated baseline, a
+3-second disabled/countdown state on "Stop for now" (friction), and an
+unresolved teaser attached to "Continue Watching" (anticipation). A closing
+"What just happened?" section names both mechanisms explicitly and warns
+against reading a three-round, n=1 demonstration as evidence about the
+visitor's own habits — the A1 lesson was that an interaction has to *teach*
+the mechanic it uses, not just be impressive, so that debrief is the page's
+real content, not decoration around the widget.
+
+**Checked before calling this phase done**, in a later session:
+
+- `pnpm check` (typecheck + build + `vitest run spec`): typecheck clean,
+  build clean, all of the interaction's own unit tests pass.
+  `curriculum.test.ts`'s "all twelve weeks" assertion fails, listing weeks
+  3–12 — expected and unchanged from Phase 1 (that test was deliberately red
+  from the start); it stays red until templating happens, one week at a
+  time, per CLAUDE.md's build order.
+- The build's own accessibility checker and broken-link checker passed
+  across all 16 generated pages, `/lectures/week-01/` included.
+- The friction/countdown and teaser behaviour is verified at the unit level
+  (`spec/one-more-episode.test.ts` asserts exactly one round carries
+  `stopDelaySeconds > 0` and exactly one carries a `teaserText`) and by
+  reading `OneMoreEpisodeExperiment.astro`'s script, which disables "Stop
+  for now" and runs a one-second countdown exactly when `stopDelaySeconds >
+  0`, and reveals the teaser exactly when `teaserText` is set. A live,
+  rendered click-through in an actual browser was **not** possible in that
+  session's container — headless Chromium needs system shared libraries
+  (`libnspr4` and friends) that can't be installed without root, which the
+  sandbox didn't have — so the pixels themselves are unconfirmed. Worth a
+  real dev-server click-through in a normal environment before leaning on
+  this page as the template for the other eleven.
+
+Next: Phase 4 — decide whether the remaining eleven weeks get templated
+from Week 1's shape as-is, or whether anything Week 1 surfaced (the
+component's API, the frontmatter shape) is worth adjusting first, then bring
+`curriculum.test.ts` back to green one week at a time rather than in one
+full-site pass.
 
 Citations above follow the format the assessment page asks for: link text is
 the commit hash or range, the link target is this repo's commit or compare
