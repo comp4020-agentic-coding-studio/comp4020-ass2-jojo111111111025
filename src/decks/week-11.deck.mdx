@@ -1,0 +1,71 @@
+---
+title: Breaking the Loop
+description: Every mechanism this course has named keeps a cycle turning. Where in that cycle does one small interruption actually change what happens?
+---
+
+import FlowRow from "../components/decks/FlowRow.astro";
+import CompareGrid from "../components/decks/CompareGrid.astro";
+import FactorCards from "../components/decks/FactorCards.astro";
+
+{/* _class: impact */}
+
+# Breaking the Loop
+
+Where can a small intervention actually break a cycle that keeps itself going?
+
+---
+
+## A familiar scene
+
+"I'll stop after this one" gets said at the *reward* stage — right when a
+resolution has just landed and a new recommendation is already glowing on
+screen — instead of at the *autoplay* stage, before the next episode has
+even started counting down.
+
+---
+
+## This week's question
+
+Ten weeks in, the pattern is obvious: these mechanisms don't just nudge one
+decision each — strung together, they form a loop. **Where** in that cycle
+does an interruption actually change what happens next?
+
+---
+
+## The five-stage loop
+
+<FlowRow steps={["Cue", "Episode", "Autoplay", "Reward", "Recommendation"]} loop />
+
+The recommendation is itself the next cue. Nothing requires four laps, or
+forty — it just keeps going until something interrupts it.
+
+---
+
+## The same interruption, different places
+
+<CompareGrid
+  left={{ title: "Early interruption", steps: ["Declined at the first countdown", "The loop never repeats", "Cheapest place to interrupt"] }}
+  right={{ title: "Late interruption", steps: ["Declined at the fourth or fifth countdown", "The loop still stops", "Only after several laps already played"] }}
+/>
+
+Same action, same mechanism — very different outcome, purely from timing.
+
+---
+
+## The interactive experiment: Break the Loop
+
+A small, deterministic version of the loop, run three ways: no intervention,
+an early intervention, and a late one. The intervention is identical each
+time — only its position changes.
+
+---
+
+{/* _class: banner */}
+
+## Takeaway
+
+A person who "finally stopped" after five episodes used exactly the same
+tool as a person who stopped after one. The difference wasn't willpower —
+it was where the interruption landed in an already-turning cycle.
+
+Next week — Final Episode.

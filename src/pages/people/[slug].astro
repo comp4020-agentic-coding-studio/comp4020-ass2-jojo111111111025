@@ -12,8 +12,6 @@ export async function getStaticPaths() {
 const { person } = Astro.props;
 const { Content } = await render(person);
 
-// Map the role enum (convenor|tutor|guest|other) to display labels rather than
-// rendering the raw lowercase value.
 const roleLabels: Record<string, string> = {
   convenor: "Convenor",
   tutor: "Tutor",
@@ -21,12 +19,8 @@ const roleLabels: Record<string, string> = {
   other: "",
 };
 const roleLabel = person.data.role ? roleLabels[person.data.role] : undefined;
-// Astro's generated type does not retain the image/alt refinement relationship,
-// so narrow the alt at the rendering boundary as well.
 const rawPhotoAlt = (person.data as { photoAlt?: unknown }).photoAlt;
 const photoAlt = typeof rawPhotoAlt === "string" ? rawPhotoAlt : "";
-// Every page owes a description --- it is what a search result and a shared
-// link show underneath the title.
 const description = person.data.description;
 ---
 

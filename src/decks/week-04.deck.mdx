@@ -1,0 +1,69 @@
+---
+title: Autoplay
+description: A cliffhanger still needs you to decide to keep watching. Autoplay removes that decision entirely.
+---
+
+import FlowRow from "../components/decks/FlowRow.astro";
+import CompareGrid from "../components/decks/CompareGrid.astro";
+import FactorCards from "../components/decks/FactorCards.astro";
+
+{/* _class: impact */}
+
+# Autoplay
+
+What changes when "continue" is the default and "stop" is the thing you have to do?
+
+---
+
+## A familiar scene
+
+<FlowRow steps={["Countdown appears", "Stop button is right there", "Nothing is clicked", "Next episode starts itself"]} />
+
+No decision ever consciously got made — because not deciding was also an option.
+
+---
+
+## This week's question
+
+Every earlier mechanism made *continuing* attractive. Autoplay doesn't need
+to. It only needs to make *stopping* into a task, and let default behaviour
+do the rest.
+
+---
+
+## Defaults do the work persuasion doesn't have to
+
+<FactorCards items={[
+  { label: "Reversing a default takes effort", description: "A deliberate act competes with tiredness and distraction" },
+  { label: "Continuing needs zero action", description: "Only the disfavoured option ever costs anything" },
+]} />
+
+---
+
+## Compare: friction vs. autoplay
+
+<CompareGrid
+  left={{ title: "Week 1's friction", steps: ["Both options need a click", "Stop is briefly delayed", "You still choose"] }}
+  right={{ title: "Autoplay", steps: ["Continuing needs no click", "Only stopping needs one", "Doing nothing is a choice already made"] }}
+/>
+
+---
+
+## The interactive experiment: The Ten-Second Window
+
+Three rounds, same countdown length every time:
+
+- **Round 1** — baseline, stop control visible, countdown announced
+- **Round 2** — control buried for a couple of seconds
+- **Round 3** — control reachable, but nothing announces the countdown
+
+---
+
+{/* _class: banner */}
+
+## Takeaway
+
+The countdown never changed across rounds. What changed was how much it cost
+to reach the option that was, technically, always available.
+
+Next week — Rewards & Reinforcement.

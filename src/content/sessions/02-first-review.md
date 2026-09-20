@@ -1,36 +1,40 @@
 ---
 title: First review
 description:
-  The second session, where work made in week 1 meets an audience for the first
-  time
+  The second session, and the first one to run the semester's lecture-then-
+  experiment-then-discussion rhythm for real
 week: 2
 date: 2027-03-01
 teachers:
   - idris-fenn
 spec:
-  - work from week 1 is running and can be shown in under two minutes
-  - you can name the one decision you are least sure about
+  - you have read Week 2's lecture page and run its interactive experiment
+  - you can name one moment in your own week where something like autoplay, a cliffhanger, or a recommendation feed shaped what you watched
 related:
   - assessments/assignment-1
 ---
 
-<!-- STARTER_CONTENT: replace this session, then remove this comment. -->
-
-Replace this page. It is here so the sessions listing sorts by week, the detail
-route renders a second spec, and the related block has an edge into the
-assessment collection.
+This is the second session, and the first to run the shape most weeks will
+follow from here: come having read that week's lecture and tried its
+experiment, then spend the session talking through what the experiment
+actually showed — and what it didn't.
 
 ## Before the session
 
-Bring the work from week 1 and the one decision you are least sure about.
+Read [Week 2's lecture page](/lectures/week-02/) and run its interactive
+experiment before you arrive. Bring the one part of it you're least sure you
+read correctly.
 
 ## In the session
 
-Short demos, then feedback aimed at the decision rather than the polish. What
-makes a review worth attending is that the feedback changes what someone does
-next, so build in the time to act on it.
+Short discussion of what people noticed running Week 2's experiment — where
+a badge or an unresolved detail changed what they picked, and where it
+didn't — followed by a first look at
+[Assignment 1](/assessments/assignment-1/), which draws on the mechanisms
+covered across Weeks 2 to 6.
 
 ## Afterwards
 
-If attendance or participation is worth marks, say so here and link the rule to
-the [assessment page](/assessments/) rather than restating it.
+Nothing from this session is submitted or marked on its own. It's here so
+the weekly rhythm is established early, before Assignment 1 asks you to work
+with it more independently.

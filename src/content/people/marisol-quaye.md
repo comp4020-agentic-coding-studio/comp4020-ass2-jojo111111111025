@@ -1,21 +1,23 @@
 ---
 title: Marisol Quaye
-description:
-  The founding convenor, responsible for the course's shape and its weekly
-  teaching programme.
-affiliation: Slop University School of Invented Disciplines
+description: "Convenor of One More Episode: The Psychology of Binge-Watching, responsible for the course's shape and its weekly teaching programme."
 role: convenor
-email: marisol.quaye@slop.university
-contact: Email for course-level questions; use the weekly session for feedback on work.
-photo: ./marisol-quaye.avif
-photoAlt: A stylised portrait of a person in three-quarter view, flat gold and black shapes on warm cream, in a two-ink risograph print
+affiliation: Slop University
+contact: >
+  Course-level questions, assessment clarification, and anything the weekly
+  session doesn't resolve. See the course's Sessions page for the weekly
+  schedule.
 ---
 
-<!-- STARTER_CONTENT: replace this person entry, then remove this comment. -->
+Marisol Quaye designed and convenes *One More Episode: The Psychology of
+Binge-Watching*, a twelve-week course on the psychology behind
+binge-watching — cliffhangers, autoplay, variable rewards and recommendation
+feeds — taught through weekly lectures paired with interactive experiments.
+As convenor, she is responsible for the course's overall shape: the weekly
+teaching programme, the two major assessments, and how each week's
+experiment connects back to that week's lecture.
 
-Replace this entry. A people page carries a short bio and whatever a student
-needs in order to contact the right person for the right thing --- and nothing
-that will be stale by week 3.
-
-Consultation hours, contact preferences and the escalation path (who to ask
-first, who to ask when that does not work) are the parts students actually read.
+For anything tied to a specific week — a lecture, that week's experiment, or
+feedback on submitted work — the tutor is the first point of contact through
+the weekly session. Bring course-wide issues, assessment clarification, or
+anything that isn't resolved there to the convenor.

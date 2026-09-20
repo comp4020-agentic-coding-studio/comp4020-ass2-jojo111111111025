@@ -11,3 +11,120 @@
  * slide class you reach for (`_class: quote`), a code-heavy layout, a
  * background. */
 @import url("astro-theme-university/styles/deck.css");
+
+/* Shared deck diagram primitives (FlowRow / CompareGrid / FactorCards
+ * components in src/components/decks/) — reused across every week's deck so
+ * "mechanism diagram", "comparison", and "factor list" always look the same
+ * regardless of which week is presenting. Built entirely from the --at-*
+ * tokens above; no new colours. */
+
+.flow-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.flow-step {
+  border: 1px solid var(--at-primary);
+  border-radius: var(--at-border-radius);
+  background: var(--at-primary-tint);
+  color: var(--at-dark-grey);
+  padding: 0.6em 1em;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.flow-arrow {
+  color: var(--at-primary);
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.flow-loop-tag {
+  border: 1px dashed var(--at-text-secondary);
+  border-radius: var(--at-border-radius);
+  padding: 0.5em 0.9em;
+  font-size: 1.4rem;
+  color: var(--at-text-secondary);
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  width: 100%;
+}
+
+.compare-panel {
+  border: 1px solid var(--at-divider);
+  border-radius: var(--at-border-radius);
+  padding: 1.25rem 1.5rem;
+
+  h3 {
+    margin: 0 0 0.75rem;
+    color: var(--at-primary);
+    font-size: 1.6rem;
+    text-transform: none;
+  }
+
+  ol {
+    margin: 0;
+    padding-inline-start: 1.25rem;
+  }
+
+  li {
+    font-size: 1.4rem;
+    margin-block-end: 0.5rem;
+  }
+}
+
+.factor-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.factor-card {
+  border: 1px solid var(--at-divider);
+  border-radius: var(--at-border-radius);
+  background: rgb(255 255 255 / 5%);
+  padding: 1rem 1.25rem;
+}
+
+.factor-card-label {
+  margin: 0 0 0.4rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--at-primary-4);
+}
+
+.factor-card-description {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--at-text-secondary);
+}
+
+/* .banner is used by week decks for a closing "next episode" slide; the base
+ * theme defines the class name nowhere, so give it a simple treatment
+ * consistent with the rest of the deck: a tinted panel with a left accent
+ * bar, no new colours. */
+:where(.reveal .slides) section.banner {
+  place-content: center;
+  background: var(--at-primary-tint);
+  color: var(--at-dark-grey);
+  border-inline-start: 0.5rem solid var(--at-primary);
+
+  :is(h1, h2, h3) {
+    background: none;
+    color: var(--at-dark-grey);
+    padding: 0;
+  }
+
+  :is(p, li) {
+    color: var(--at-dark-grey);
+  }
+}

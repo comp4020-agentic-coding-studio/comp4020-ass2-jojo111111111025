@@ -1,35 +1,59 @@
-# Your harness
+# COMP4020 Assignment 2
 
-This file is yours, and it arrives with no rules in it on purpose --- this note
-is all there is, and it goes when you write your own. The rules you hold the
-agent to are part of what gets marked, so they should be rules you decided on.
+This repository is the course website for a COMP4020 Assignment 2 project: **One More Episode: The Psychology of Binge-Watching**. The project is an academic course site about why people continue watching, how psychological and streaming mechanisms influence viewing behaviour, and how the viewing loop can be interrupted.
 
-Nothing about the starter is recorded here. The platform under you is fixed and
-documented in `README.md`, and the
-[course website](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/)
-publishes this deliverable's brief and spec. Read both before you plan or build;
-what the agent needs to carry from either is your call.
+The deployed artefact is what matters. The site should work as a coherent university course website at both required marking viewports: **1920×1080 desktop** and **390×844 mobile**. The rendered page is the source of truth, so inspect the actual page when possible rather than assuming that the source code looks correct.
 
-## Assignment 2 project: The Psychology of "One More Episode"
+## How to work in here
 
-Core question: **why do we keep watching when we know we should stop?**
+- Inspect the existing project before making changes.
+- Keep the development server available when useful and inspect rendered pages for visual or interaction changes.
+- Make focused changes that solve the actual requirement; do not redesign unrelated parts of the site.
+- When a check fails, read the failure output before changing code. Treat the failure as evidence about what is actually wrong.
+- Run the relevant checks after meaningful changes.
+- Before shipping, inspect the final diff and verify that no unexpected files changed.
+- Never knowingly commit a failing state.
+- Do not commit or push unless explicitly requested.
 
-Design thesis, and the one idea this whole site carries: **the course website
-behaves like the very system it teaches students to critique.** Every content,
-navigation, and visual decision should be checked against that sentence before
-it ships. If a decision doesn't serve it, it's out of scope.
+The Agent is an implementation and verification partner. It can inspect the repository, propose implementation approaches, implement components and TypeScript logic, develop course content, write tests, diagnose failures, and make targeted content, structural, or CSS improvements.
 
-### Lesson from Assignment 1 — do not repeat it
+The Agent does not own the course design. Do not independently change the course concept, teaching progression, psychological questions, assessment purpose or weighting, or major information architecture. When a requirement is ambiguous, inspect the existing project and course requirements first and ask rather than inventing a new direction.
 
-Tutor feedback on A1: the mechanic worked, but the written and visual content
-around it was weak — decorative rather than doing real work. For A2: **content
-quality is a first-class design problem.** An interaction earns its place only
-if it teaches that week's specific psychological mechanic. If it's impressive
-but doesn't teach, cut it.
+## The checks (your sensors)
 
-### The 12 weeks (fixed — don't renumber or resequence)
+The important local checks are:
 
-1. The One More Episode Effect
+- **`pnpm check`** — runs the project's automated test/check suite. A failing test is evidence that an expected contract or behaviour is no longer true.
+- **`pnpm check:evidence`** — checks the process evidence required by the course, including `PROCESS.md` commit citations and the required process files.
+- **`pnpm build`** — builds the Astro site for deployment. A successful local build is necessary but does not replace checking the deployed GitHub Pages artefact.
+- **`git diff --check`** — catches whitespace errors in the current diff.
+
+The current project verification has reached **15 test files and 119 passing tests**. The build has generated **61 pages**, with accessibility and broken-link checks reporting no violations. These numbers describe the verified project state and should be rechecked after substantial changes rather than assumed permanently.
+
+Do not invent additional checks or claim that a tool measures something it does not actually measure. Inspect `package.json` and `spec/` when the exact behaviour of the harness is uncertain.
+
+## The stack and deployment
+
+This project uses:
+
+- Astro
+- TypeScript
+- pnpm
+- GitHub Pages
+
+The deployed site lives under the repository base path rather than the domain root. The project uses the existing base-path resolution in `scripts/pages-base.ts` and the Astro deployment configuration. Do not remove or bypass this configuration.
+
+A page or asset working at the local root is not sufficient evidence that it works after deployment. Be especially careful with links, assets, slides, recordings, and navigation paths under the GitHub Pages repository path.
+
+## Course concept
+
+The course is **One More Episode: The Psychology of Binge-Watching**.
+
+The course examines why people continue watching when they intended to stop, how streaming interfaces and psychological mechanisms shape viewing behaviour, and how the viewing loop can be interrupted.
+
+The twelve-week structure is:
+
+1. One More Episode Effect
 2. Why We Start Watching
 3. Cliffhangers
 4. Autoplay
@@ -40,86 +64,119 @@ but doesn't teach, cut it.
 9. Social Watching
 10. Sleep vs Entertainment
 11. Breaking the Loop
-12. The Final Episode
+12. Final Episode
 
-### Every week's page needs all six of
+The progression is intentional. Weeks 1–6 introduce psychological and streaming/interface mechanisms. Weeks 7–10 examine broader binge-watching patterns and trade-offs. Week 11 focuses on interruption and breaking the loop. Week 12 synthesises the course.
 
-1. a clear psychological question
-2. a concise explanation
-3. a concrete example
-4. a meaningful interaction/experiment (where one genuinely helps — never for
-   decoration)
-5. a reflection/question back to the visitor
-6. a connection to the previous and next week ("Previously on…" / "Next
-   episode…")
+The site should therefore feel like a complete university course rather than a generic replacement of the starter template.
 
-### Platform contract vs. what's ours (see `README.md`)
+## Interaction strategy
 
-Fixed, don't touch: the Slop identity, the four collection **keys**
-(`sessions`, `assessments`, `lectures`, `people`), the build pipeline, the
-generated API. Everything else is ours, including how those fixed keys are
-*labelled*. `src/site-config.ts` already has the sanctioned pattern —
-`sessionLabels` renames "Session" in the UI while the collection stays
-`sessions`. Do the same for `lectures` → "Episode" rather than trying to
-rename the collection itself.
+Each week has a bespoke interactive experiment connected to its psychological question.
 
-Extra frontmatter fields (e.g. `previouslyOn`, `nextTease`,
-`psychologicalQuestion`) pass straight into the generated API's `meta` object
-already — `course-content.ts` puts anything outside the base
-`courseNodeSchema` fields there, no `content.config.ts` change required to use
-them. Formalise the ones we rely on everywhere in `content.config.ts` once the
-content model is settled, for real validation instead of silent typos.
+The project deliberately does not force every week into one identical interaction widget. Different concepts use different interaction forms, including experiments, ranking, countdowns, reward schedules, prediction and time estimation, social signals, and synthesis.
 
-### Streaming vocabulary — use, don't copy
+The repository separates interaction concerns where appropriate:
 
-Use: Episode, Continue Watching, Up Next, Previously On, Watch Progress,
-autoplay-style countdowns, recommendation-style navigation. Don't copy
-Netflix's actual branding, palette, or logo treatment — the site needs its own
-academic identity underneath the streaming behaviour.
+- Astro components provide the interface.
+- TypeScript modules in `src/scripts/` contain interaction logic where appropriate.
+- Pure or DOM-free logic should remain directly testable when practical.
+- Behavioural tests should test meaningful behaviour rather than only checking that markup exists.
 
-### Conventions established by Week 1 (Phase 4)
+Inspect the actual implementation before making architectural claims. Not every interaction is required to use exactly the same pattern.
 
-Week 1 (`src/content/lectures/week-01.mdx`, `68308d3`) is the proof of these
-two patterns, not a template file to copy. Follow the patterns; don't force
-a later week's headings or interaction shape to match Week 1's literally —
-that's decorative uniformity, the exact A1 failure mode.
+## Course information architecture
 
-**Page structure** — the six required elements map onto sections in this
-order: psychological question (frontmatter `psychologicalQuestion`, surfaced
-by `[slug].astro`) → explanation → concrete example → the interaction →
-a debrief that names the mechanism(s) the interaction just used and warns
-against reading a single, n=1 run as personal evidence → reflection prompt
-→ "Next episode" (and "Previously on…", for every week but 1). Section
-headings themselves are free — "This week's question" and "A familiar
-scene" are Week 1's wording, not required text. An extra section (Week 1 has
-"Learning objectives") is fine when it earns its place; it's not one of the
-six and isn't mandatory elsewhere.
+The main course areas include:
 
-**Interaction architecture** — when a week's interaction is more than static
-prose, split it the way `one-more-episode.ts` / `OneMoreEpisodeExperiment.astro`
-/ `one-more-episode.test.ts` do: pure, DOM-free state logic in
-`src/scripts/<name>.ts`, unit-tested in `spec/<name>.test.ts`, and a thin
-`.astro` component that only wires that logic to the DOM and never
-re-implements it. Each week's interaction is its own bespoke component —
-there is no shared "InteractionWidget" to extend, and building one before a
-second or third interaction exists would be guessing at an API from a
-sample size of one. Not every week needs a stateful interaction at all;
-CLAUDE.md's own #4 already qualifies this to "where one genuinely helps."
+- homepage
+- lectures
+- weekly sessions/schedule
+- assessments
+- people
+- policies
+- lecture decks/slides
+- weekly quizzes
+- recordings or recording placeholders where applicable
 
-`psychologicalQuestion`, `previouslyOn`, and `nextTease` stay `.optional()` in
-`content.config.ts`'s `lectures` schema — Astro validates content at build
-time unconditionally, so making them required there would break build/dev
-for every unfinished placeholder week, not just flag the gap. Instead,
-`spec/curriculum.test.ts` reports missing connective tissue as a normal,
-non-build-breaking test failure: every lecture needs
-`psychologicalQuestion`, weeks 2-12 need `previouslyOn` (week 1 is exempt —
-it has no predecessor), and weeks 1-11 need `nextTease` (week 12 is exempt —
-"The Final Episode" has no successor). A future week missing its connective
-tissue shows up as a red test, not a broken build.
+Lecture pages should maintain a meaningful relationship between the psychological question, lecture content, weekly interaction, slides, and supporting course material.
 
-### Build order — do not jump to building all 12 weeks
+Course-wide consistency matters. A page should not contain leftover starter-template content simply because that content was not part of the interaction itself.
 
-Prototype one week's page fully (content + interaction + layout) before
-templating the rest. Test that one page works before Phase 5/6 (templating,
-then full build). A full-site generation pass in one shot is the thing to
-avoid — it's how A1's content ended up thin.
+## Content rules
+
+Preserve the academic and course-specific purpose of the site.
+
+The Agent should:
+
+- preserve the intended psychological framing;
+- avoid unsupported academic claims;
+- avoid fake staff credentials, qualifications, affiliations, or contact details;
+- avoid replacing course-specific material with generic filler;
+- keep information consistent across lectures, sessions, assessments, people, policies, and the homepage;
+- treat explanatory text, hierarchy, and surrounding information as part of the artefact.
+
+## Agent and human responsibilities
+
+The Agent helps implement the work, but **the student is responsible for the course design**.
+
+The student decides:
+
+- the course concept;
+- the twelve-week structure;
+- psychological questions;
+- teaching progression;
+- relationships between interactions and concepts;
+- assessment purpose and weighting;
+- major information architecture;
+- final content judgement.
+
+The Agent can help turn those decisions into actual code and content, test the result, identify problems, and make focused improvements.
+
+Do not silently replace a teaching decision with an implementation preference.
+
+## Process evidence
+
+`CLAUDE.md` and `PROCESS.md` are part of the assignment's process evidence. The commit history should make the development process legible.
+
+Important commits include:
+
+- [`805d06f`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-jojo111111111025/commit/805d06f) — specification and checkable requirements
+- [`20ae414`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-jojo111111111025/commit/20ae414) — information architecture, content model and interaction strategy
+- [`68308d3`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-jojo111111111025/commit/68308d3) — Week 1 prototype
+- [`5b9f548`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-jojo111111111025/commit/5b9f548) — curriculum completeness enforcement
+- [`ba8e792`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-jojo111111111025/commit/ba8e792) — Week 2 interaction
+- [`3f36726`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-jojo111111111025/commit/3f36726) — Week 6 time-perception experiment
+- [`69bcd9d`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-jojo111111111025/commit/69bcd9d) — Weeks 3–12 interactions
+- [`a9f39c6`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-jojo111111111025/commit/a9f39c6) — process next steps
+
+These citations should remain consistent with the actual Git history. Do not invent commit meanings or add unsupported history.
+
+`PROCESS.md` provides the detailed reading guide to the development process. Keep it within the assignment's required 400–600 words and preserve working commit citations.
+
+## Final verification workflow
+
+Before considering a change complete:
+
+1. Inspect the relevant existing code and content.
+2. Make the smallest appropriate change.
+3. Run relevant tests.
+4. Inspect the rendered page when visual or interaction behaviour matters.
+5. Run `pnpm check`.
+6. Run `pnpm check:evidence`.
+7. Run `pnpm build`.
+8. Run `git diff --check`.
+9. Inspect `git diff` and `git status`.
+10. Check important pages at 1920×1080 and 390×844.
+11. Report what changed and what passed.
+12. Wait for explicit instruction before committing or pushing.
+
+Never treat a green local test as proof that the deployed site is correct. Check the actual deployment path and rendered artefact when possible.
+
+## This file is yours
+
+This `CLAUDE.md` is part of the project's harness. It should record useful project-specific rules, recurring failure modes, reliable verification practices, and constraints that help the Agent work effectively.
+
+Keep it honest and current. If the Agent repeatedly makes the same mistake or a project-specific convention becomes important, document that convention here. Do not rewrite the file merely to add generic instructions that do not help this repository.
+
+The goal is not to make the Agent autonomous in deciding what the course should be. The goal is to make the Agent more reliable at implementing, checking, and refining a course whose design decisions remain human-directed.

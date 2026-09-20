@@ -1,62 +1,94 @@
 ---
 title: The One More Episode Effect
-description: Opening lecture slides — the two ordinary design choices that make stopping harder than continuing.
+description: Opening lecture slides — why the decision to stop is harder than it looks, and the two ordinary design choices that make it that way.
 ---
+
+import FlowRow from "../components/decks/FlowRow.astro";
+import CompareGrid from "../components/decks/CompareGrid.astro";
+import FactorCards from "../components/decks/FactorCards.astro";
 
 {/* _class: impact */}
 
 # The One More Episode Effect
 
-Week 1 — why do we keep watching when we already know we should stop?
+Why does stopping feel so much harder than continuing?
 
 ---
 
-## Not a willpower story
+## A familiar situation
 
-"I got sucked in" describes losing a fight.
+<FlowRow steps={["Episode ends", '"Next episode" appears', '"Just one more"']} loop />
 
-This week is about why the fight was never fair to begin with.
-
----
-
-## Two ingredients
-
-- **Friction** — make stopping cost more effort than continuing
-- **Anticipation** — leave something specific unresolved
-
-Neither one has to change your opinion of the show.
+Late at night, this sequence can repeat far longer than planned — without
+ever feeling like a single big decision.
 
 ---
 
-{/* _class: quote */}
+## Why stopping is difficult
 
-> Change what counts as the easy choice, and you change what people choose —
-> without changing what they actually want.
+<FactorCards items={[
+  { label: "Unresolved narrative", description: "A cliffhanger leaves something specific still open" },
+  { label: "Immediate reward", description: "The next episode is a reward that's ready right now" },
+  { label: "Reduced stopping points", description: "There's no natural pause built into the handoff" },
+  { label: "Low effort to continue", description: "Continuing takes no action; stopping takes one" },
+]} />
 
----
-
-## What the page just did to you
-
-Three rounds, one choice, three interfaces:
-
-1. baseline — both options equally easy
-2. friction — "stop" delayed three seconds
-3. anticipation — "continue" comes with an unresolved detail
+None of these has to change your opinion of the show to change what you do next.
 
 ---
 
-## One participant is not a study
+## The streaming loop
 
-A single run, on one evening, is evidence the mechanism is real.
+<FlowRow steps={["Trigger", "Anticipation", "Episode", "Reward", "Next episode"]} loop />
 
-It is not evidence about your willpower.
+The stopping decision gets harder right at the handoff from **reward** to
+**next episode** — the moment with the least friction and the most pull.
+
+---
+
+## What happens to the stopping decision?
+
+<CompareGrid
+  left={{ title: "Traditional", steps: ["Episode ends", "A decision has to be made", "You choose what happens next"] }}
+  right={{ title: "Streaming", steps: ["Episode ends", "The next episode is already available", "Continuing requires nothing"] }}
+/>
+
+A simple comparison, not a universal claim — plenty of viewers still stop
+either way.
+
+---
+
+## Think before the experiment
+
+If the next episode is already waiting, what would make you continue?
+
+<FactorCards items={[
+  { label: "Curiosity about what happens next" },
+  { label: "Not wanting to break the momentum" },
+  { label: "Simply not deciding at all" },
+]} />
+
+---
+
+## The One More Episode Experiment
+
+You're about to run a small experiment on yourself: the same "stop or
+continue" choice, presented three different ways.
+
+- **Baseline** — both options equally easy
+- **Friction** — the "stop" option is delayed by a few seconds
+- **Anticipation** — "continue" comes with a specific unresolved detail
+
+Watch what changes about the decision itself, not just what you choose.
 
 ---
 
 {/* _class: banner */}
 
-## Next episode
+## Takeaway
 
-Before stopping gets hard, you have to start.
+Stopping isn't just a yes-or-no willpower question — the environment around
+the decision changes how easy it feels to make. The experiment you're about
+to run lets you examine that for yourself, on yourself.
 
-Week 2 — Why We Start Watching.
+Next week — Why We Start Watching.

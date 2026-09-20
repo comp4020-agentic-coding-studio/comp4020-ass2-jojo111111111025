@@ -1,8 +1,32 @@
 ---
-import MdxPageLayout from "astro-theme-university/layouts/MdxPageLayout.astro";
+import BaseLayout from "astro-theme-university/layouts/BaseLayout.astro";
+import { courseShortName } from "../course-config";
 import { siteConfig } from "../site-config";
+
+const { lead = true, frontmatter, ...direct } = Astro.props;
+const props = frontmatter ?? direct;
+const { title, description, heroImage, ...rest } = props;
 ---
 
-<MdxPageLayout siteConfig={siteConfig} {...Astro.props}>
+<BaseLayout
+  title={`${title} — ${courseShortName}`}
+  description={description}
+  {...siteConfig}
+  {...rest}
+  heroImage={heroImage}
+>
+  <slot name="head" slot="head" />
+  {!heroImage && <h1>{title} — {courseShortName}</h1>}
+  {lead && description && <p class="lead">{description}</p>}
   <slot />
-</MdxPageLayout>
+</BaseLayout>
+
+<style>
+  /* The theme's h1 rule sets a 0.5em bottom margin for general use, but
+     here the h1 always introduces the page's own lead paragraph directly
+     below it (title + subtitle), so it should sit close rather than at
+     that generic heading distance. */
+  h1 {
+    margin-block-end: var(--at-spacing-xs);
+  }
+</style>

@@ -1,0 +1,23 @@
+---
+interface Item {
+  label: string;
+  description?: string;
+}
+
+interface Props {
+  items: Item[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="factor-cards">
+  {
+    items.map((item) => (
+      <div class="factor-card">
+        <p class="factor-card-label">{item.label}</p>
+        {item.description && <p class="factor-card-description">{item.description}</p>}
+      </div>
+    ))
+  }
+</div>

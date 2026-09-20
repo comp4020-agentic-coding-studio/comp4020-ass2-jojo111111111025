@@ -1,0 +1,66 @@
+---
+title: Recommendation Algorithms
+description: A feed doesn't have to remove your choices to narrow your world — it only has to keep offering more of whatever you already picked.
+---
+
+import FlowRow from "../components/decks/FlowRow.astro";
+import CompareGrid from "../components/decks/CompareGrid.astro";
+import FactorCards from "../components/decks/FactorCards.astro";
+
+{/* _class: impact */}
+
+# Recommendation Algorithms
+
+Does picking what you already like change what you're offered next?
+
+---
+
+## A familiar scene
+
+You watch one workplace comedy on a slow evening. Within a few sessions your
+home screen is visibly heavier on comedies — not because you told it your
+preferences, and not because you watched anything else in between.
+
+---
+
+## This week's question
+
+A recommendation feed never has to say no to you. Do five small,
+individually reasonable picks in a row change what you're even shown by the
+sixth?
+
+---
+
+## Feedback loops don't need intent
+
+<FactorCards items={[
+  { label: "A simple rule", description: "\"Show more of what this person picked before\"" },
+  { label: "Applied repeatedly", description: "Every pick becomes an input to the next round's options" },
+  { label: "No step removes variety", description: "Repetition alone does the narrowing" },
+]} />
+
+---
+
+## The narrowing loop
+
+<FlowRow steps={["Pick a show", "Feed updates the mix", "Menu narrows slightly", "Pick again"]} loop />
+
+---
+
+## The interactive experiment: The Narrowing Feed
+
+Five rounds. Each shows four categories; pick one. The next round's mix
+updates based only on your pick history, following a fixed, simplified rule
+— not a real streaming algorithm, just enough of the same shape.
+
+---
+
+{/* _class: banner */}
+
+## Takeaway
+
+Nothing here adapted to guess your "real" taste. A handful of individually
+small picks compounded into a visibly smaller menu — with no single step
+where anyone decided to remove an option.
+
+Next week — Social Watching.

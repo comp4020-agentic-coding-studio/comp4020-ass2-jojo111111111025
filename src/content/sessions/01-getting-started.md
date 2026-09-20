@@ -1,36 +1,38 @@
 ---
 title: Getting started
 description:
-  The first session of the semester — what to have working before you arrive,
-  and what happens once you do
+  The first session of the semester — a short orientation to how the weekly
+  lecture-and-experiment rhythm works, before Week 2 runs it for real
 week: 1
 date: 2027-02-22
 teachers:
   - marisol-quaye
 spec:
-  - your development environment runs the course's toolchain
-  - you can build and preview the site locally
-  - you have something, however rough, to show the class
+  - you have read Week 1's lecture page and run its interactive experiment at least once
+  - you can name one show or streaming habit of your own you're curious to look at this semester
+  - you know where to find the weekly schedule, the assessment briefs and the people to ask for help
 ---
 
-<!-- STARTER_CONTENT: replace this session, then remove this comment. -->
-
-Replace this page. A session brief tells a student three things: what to bring,
-what will happen, and how to tell afterwards whether it went well.
+This is the first session of *One More Episode: The Psychology of
+Binge-Watching* — a short orientation before the weekly rhythm of lecture,
+then experiment, then discussion starts properly from Week 2 onward.
 
 ## Before the session
 
-The `spec` above is the contract. Write each line so a reader can tell whether
-it has been met without asking you --- that is the difference between a spec and
-a wish.
+Read [Week 1's lecture page](/lectures/week-01/) and run its interactive
+experiment before you arrive. The session assumes you've already tried it
+yourself, not just read a description of it.
 
 ## In the session
 
-Say how the time is actually spent, in the order it happens. If the session runs
-to a repeating shape --- a demo, then feedback, then work time --- name the
-parts and say roughly how long each takes. Students plan against it.
+A short walkthrough of how the semester is structured — one psychological
+mechanism a week, each paired with a lecture and a hands-on experiment —
+followed by open discussion of what people noticed running Week 1's
+experiment, and a quick tour of where to find the weekly schedule, the
+assessment briefs, and the teaching team.
 
 ## Afterwards
 
-Say what leaves the session: a mark, a piece of feedback, a decision about the
-next week's work.
+Nothing is submitted from this session. What you should leave with is a
+clear picture of how the twelve weeks fit together, and enough orientation
+to work through Week 2 on your own before the next session.

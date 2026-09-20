@@ -1,0 +1,116 @@
+---
+import { render } from "astro:content";
+import { getPublishedCollection } from "astro-course-university/content";
+import Card from "astro-theme-university/components/Card.astro";
+import CardGrid from "astro-theme-university/components/CardGrid.astro";
+import { withBase } from "astro-theme-university/url";
+import { formatCourseDate } from "../lib/dates";
+
+const lectures = await getPublishedCollection("lectures");
+const sorted = lectures.sort((a, b) => a.data.week - b.data.week);
+const allAssessments = await getPublishedCollection("assessments");
+// Weekly quizzes are tagged `quiz` in their own content — the existing
+// `tags` field already on every course-graph collection — so they can be
+// told apart from the two major assessments without a schema change.
+const quizzes = allAssessments.filter((assessment) => assessment.data.tags.includes("quiz"));
+const majorAssessments = allAssessments.filter(
+  (assessment) => !assessment.data.tags.includes("quiz"),
+);
+
+// A major assessment's `week` is the week it is released, not the only week
+// it applies to. Its `due` date marks the last week it stays active: the
+// link is shown from the release week through the week containing (or
+// immediately preceding) the due date, then drops off — Assignment 1
+// (released week 4, due week 6) doesn't linger on the Sessions cards all
+// the way to week 12.
+const dueWeekOf = (assessment: (typeof majorAssessments)[number]) => {
+  const onOrBeforeDue = sorted.filter((lecture) => lecture.data.date <= assessment.data.due);
+  return onOrBeforeDue.length > 0
+    ? onOrBeforeDue[onOrBeforeDue.length - 1].data.week
+    : assessment.data.week;
+};
+
+const weeks = await Promise.all(
+  sorted.map(async (lecture) => {
+    const { headings } = await render(lecture);
+    const experimentHeading = headings.find((heading) =>
+      heading.text.startsWith("The interactive experiment"),
+    );
+    const experimentSlug = experimentHeading?.slug;
+    const activeAssessments = majorAssessments.filter(
+      (assessment) =>
+        assessment.data.week <= lecture.data.week && lecture.data.week <= dueWeekOf(assessment),
+    );
+    const weekQuiz = quizzes.find((quiz) => quiz.data.week === lecture.data.week);
+
+    const links: { label: string; href: string }[] = [
+      { label: "Recording", href: `/recordings/${lecture.id}/` },
+    ];
+    if (lecture.data.slides) links.push({ label: "Slides", href: lecture.data.slides });
+    if (experimentSlug) {
+      links.push({ label: "Experiment", href: `/lectures/${lecture.id}/#${experimentSlug}` });
+    }
+    if (weekQuiz) {
+      links.push({ label: "Quiz", href: `/assessments/${weekQuiz.id}/` });
+    }
+    for (const assessment of activeAssessments) {
+      links.push({ label: assessment.data.title, href: `/assessments/${assessment.id}/` });
+    }
+
+    return { lecture, links };
+  }),
+);
+---
+
+<div class="at-weekly-schedule-grid">
+  <CardGrid columns={2}>
+    {
+      weeks.map(({ lecture, links }) => (
+        <Card headingLevel="h2" title={`Week ${lecture.data.week}: ${lecture.data.title}`}>
+          <p>
+            <small>{formatCourseDate(lecture.data.date)}</small>
+          </p>
+          {lecture.data.psychologicalQuestion && <p>{lecture.data.psychologicalQuestion}</p>}
+          <p class="at-weekly-schedule-links">
+            {links.map((link, index) => (
+              <>
+                {index > 0 && " · "}
+                <a href={withBase(link.href)}>{link.label}</a>
+              </>
+            ))}
+          </p>
+        </Card>
+      ))
+    }
+  </CardGrid>
+</div>
+
+<style>
+  /* Scoped to this page's cards only: none of them ever carry an image, so
+     replacing the shared Card's image/body grid with a simple flex column
+     is safe here and lets the links row pin to the bottom instead of
+     trailing right after whatever length of psychological question that
+     week happens to have. */
+  .at-weekly-schedule-grid :global(.at-card) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .at-weekly-schedule-grid :global(.at-card-body) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .at-weekly-schedule-links {
+    margin-top: auto;
+    padding-top: var(--at-spacing-sm, 0.5rem);
+    font-size: 0.9em;
+    line-height: 1.6;
+    overflow-wrap: break-word;
+  }
+
+  .at-weekly-schedule-links a {
+    display: inline-block;
+  }
+</style>

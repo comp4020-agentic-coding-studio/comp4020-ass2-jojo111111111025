@@ -1,0 +1,69 @@
+---
+title: Social Watching
+description: Two identical shows, side by side, will still get picked unevenly the moment one of them says other people are watching it.
+---
+
+import FlowRow from "../components/decks/FlowRow.astro";
+import CompareGrid from "../components/decks/CompareGrid.astro";
+import FactorCards from "../components/decks/FactorCards.astro";
+
+{/* _class: impact */}
+
+# Social Watching
+
+What is a social cue actually doing, when the two options are otherwise the same?
+
+---
+
+## A familiar scene
+
+Two unfamiliar shows, near-identical descriptions. One carries a small
+label: "Trending now." You click that one — and if asked why, the honest
+answer is "it seemed more popular," even though "popular" told you nothing
+about whether you'd enjoy it.
+
+---
+
+## This week's question
+
+Week 2 showed a "popular" badge can shift a pick between *different* shows —
+so maybe it was just nudging you toward the better option. This week closes
+that gap: does a social cue still move a choice between two **identical**
+shows?
+
+---
+
+## Two kinds of social cue
+
+<CompareGrid
+  left={{ title: "Crowd cue", steps: ["\"12,400 people watching now\"", "Reports on a mass of strangers", "Popularity itself as evidence"] }}
+  right={{ title: "Named-friend cue", steps: ["\"Alex is watching this\"", "Reports on one known person", "Trust in a person, not a number"] }}
+/>
+
+---
+
+## Why an identical pair is the cleanest test
+
+<FactorCards items={[
+  { label: "Nothing about the content to prefer", description: "Any shift can't be explained by quality" },
+  { label: "The cue is the only variable", description: "So the cue is what's doing the work, on its own" },
+]} />
+
+---
+
+## The interactive experiment: Two Identical Rows
+
+Four rounds, always the exact same two shows in the same two slots. Some
+rounds carry no cue; some carry a crowd cue or a named-friend cue — the
+cued slot alternates, so this isn't measuring which side you tend to click.
+
+---
+
+{/* _class: banner */}
+
+## Takeaway
+
+The shows never changed. Whatever moved your pick had to be the label
+sitting next to an otherwise identical option.
+
+Next week — Sleep vs Entertainment.

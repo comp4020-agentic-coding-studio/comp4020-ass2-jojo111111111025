@@ -2,36 +2,40 @@
 import Card from "astro-theme-university/components/Card.astro";
 import CardGrid from "astro-theme-university/components/CardGrid.astro";
 import ContentLayout from "astro-theme-university/layouts/ContentLayout.astro";
-import heroImage from "../assets/images/hero-home.avif";
-import { courseMeta } from "../course-config";
+import { courseMeta, courseShortName } from "../course-config";
 import { sessionLabels, siteConfig } from "../site-config";
 
-// STARTER_CONTENT: replace the hero artwork and its alt text below, then
-// remove this comment.
+const courseSubtitle = courseMeta.title.split(":")[1]?.trim();
 ---
 
 <ContentLayout
-  title={`${courseMeta.code}: ${courseMeta.title}`}
+  title={courseShortName}
   description={courseMeta.description}
-  heroImage={heroImage}
-  heroImageAlt="A lecture theatre reduced to flat gold and black shapes, rows of seats sweeping past the frame, in a two-ink risograph print"
   {...siteConfig}
 >
+  {courseSubtitle && <p class="course-subtitle"><strong>{courseSubtitle}</strong></p>}
   <ul class="course-tags" aria-label="Course tags">
     {courseMeta.tags.map((tag) => <li>{tag}</li>)}
   </ul>
 
-  <!-- STARTER_CONTENT: replace the authored page below, then remove this comment. -->
   <h2>What you will do</h2>
   <p>
-    Say what a student spends their time on — the making, reading, arguing or
-    measuring that fills the weeks. Name the artefact they walk out with.
+    Across twelve weeks, you'll work through one psychological mechanism at a
+    time — cliffhangers, autoplay, variable rewards, distorted time
+    perception, narrowing recommendation feeds, social cues and more — each
+    paired with a short lecture and a hands-on interactive experiment you run
+    yourself. By the final week you'll have a working vocabulary for naming
+    exactly how a streaming interface keeps a viewer watching, and a chain of
+    twelve small demonstrations you can point to as evidence.
   </p>
 
   <h2>Who it is for</h2>
   <p>
-    Say who this is aimed at and what they need to already know. Be specific
-    enough that someone can rule themselves in or out without emailing you.
+    Anyone curious about why "just one more episode" so rarely stays true —
+    no background in psychology or interface design is assumed. The course
+    suits students who want to think critically about the platforms they
+    already use, and who are willing to treat their own viewing habits as
+    something worth examining rather than taking for granted.
   </p>
 
   <h2>Where to go next</h2>
@@ -49,6 +53,12 @@ import { sessionLabels, siteConfig } from "../site-config";
 </ContentLayout>
 
 <style>
+  .course-subtitle {
+    margin-block: 0 1rem;
+    color: var(--at-text-secondary);
+    font-size: 1.1rem;
+  }
+
   .course-tags {
     display: flex;
     flex-wrap: wrap;

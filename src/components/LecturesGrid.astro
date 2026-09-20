@@ -8,13 +8,42 @@ const lectures = await getPublishedCollection("lectures");
 const visible = lectures.sort((a, b) => a.data.date.getTime() - b.data.date.getTime());
 ---
 
-<CardGrid columns={2}>
-  {
-    visible.map((lecture) => (
-      <Card headingLevel="h2" title={lecture.data.title} href={`/lectures/${lecture.id}/`}>
-        {lecture.data.description && <p>{lecture.data.description}</p>}
-        <p><small>Week {lecture.data.week} · {formatCourseDate(lecture.data.date)}</small></p>
-      </Card>
-    ))
+<div class="at-lectures-grid">
+  <CardGrid columns={2}>
+    {
+      visible.map((lecture) => (
+        <Card headingLevel="h2" title={lecture.data.title} href={`/lectures/${lecture.id}/`}>
+          {lecture.data.description && <p>{lecture.data.description}</p>}
+          <p class="at-lectures-grid-meta">
+            <small>
+              Week {lecture.data.week} · {formatCourseDate(lecture.data.date)}
+            </small>
+          </p>
+        </Card>
+      ))
+    }
+  </CardGrid>
+</div>
+
+<style>
+  /* Scoped to this page's cards only: none of them ever carry an image, so
+     replacing the shared Card's image/body grid with a simple flex column is
+     safe here and lets the week/date line pin to the bottom instead of
+     trailing right after whatever length of description that lecture
+     happens to have. Same technique as the Sessions weekly-schedule grid. */
+  .at-lectures-grid :global(.at-card) {
+    display: flex;
+    flex-direction: column;
   }
-</CardGrid>
+
+  .at-lectures-grid :global(.at-card-body) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .at-lectures-grid-meta {
+    margin-top: auto;
+    padding-top: var(--at-spacing-sm, 0.5rem);
+  }
+</style>

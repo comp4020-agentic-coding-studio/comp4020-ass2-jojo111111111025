@@ -1,0 +1,25 @@
+---
+import { getPublishedCollection } from "astro-course-university/content";
+import BaseLayout from "astro-theme-university/layouts/BaseLayout.astro";
+import { withBase } from "astro-theme-university/url";
+import { courseShortName } from "../../course-config";
+import { siteConfig } from "../../site-config";
+
+export async function getStaticPaths() {
+  const lectures = await getPublishedCollection("lectures");
+  return lectures.map((lecture) => ({ params: { slug: lecture.id }, props: { lecture } }));
+}
+
+const { lecture } = Astro.props;
+const title = `Week ${lecture.data.week} Recording`;
+const description = `The recording for Week ${lecture.data.week}: ${lecture.data.title}.`;
+---
+
+<BaseLayout title={`${title} — ${courseShortName}`} description={description} {...siteConfig}>
+  <h1>{title}</h1>
+  <p class="lead">Recording coming soon.</p>
+  <p>
+    In the meantime, see the
+    <a href={withBase(`/lectures/${lecture.id}/`)}>Week {lecture.data.week} lecture</a>.
+  </p>
+</BaseLayout>

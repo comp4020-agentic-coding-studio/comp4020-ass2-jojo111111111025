@@ -8,19 +8,44 @@ const assessments = await getPublishedCollection("assessments");
 const visible = assessments.sort((a, b) => a.data.week - b.data.week);
 ---
 
-<CardGrid columns={2}>
-  {
-    visible.map((assessment) => (
-      <Card headingLevel="h2" title={assessment.data.title} href={`/assessments/${assessment.id}/`}>
-        {assessment.data.description && <p>{assessment.data.description}</p>}
-        {assessment.data.weight != null && (
-          <p>
-            <small>
-              Due {formatCourseDate(assessment.data.due)} · Weight: {assessment.data.weight}%{assessment.data.draft && " · Draft"}
-            </small>
-          </p>
-        )}
-      </Card>
-    ))
+<div class="at-assessments-grid">
+  <CardGrid columns={2}>
+    {
+      visible.map((assessment) => (
+        <Card headingLevel="h2" title={assessment.data.title} href={`/assessments/${assessment.id}/`}>
+          {assessment.data.description && <p>{assessment.data.description}</p>}
+          {assessment.data.weight != null && (
+            <p class="at-assessments-grid-meta">
+              <small>
+                Due {formatCourseDate(assessment.data.due)} · Weight: {assessment.data.weight}%{assessment.data.draft && " · Draft"}
+              </small>
+            </p>
+          )}
+        </Card>
+      ))
+    }
+  </CardGrid>
+</div>
+
+<style>
+  /* Scoped to this page's cards only: none of them ever carry an image, so
+     replacing the shared Card's image/body grid with a simple flex column is
+     safe here and lets the due/weight line pin to the bottom instead of
+     trailing right after whatever length of description that assessment
+     happens to have. Same technique as the Lectures and Sessions grids. */
+  .at-assessments-grid :global(.at-card) {
+    display: flex;
+    flex-direction: column;
   }
-</CardGrid>
+
+  .at-assessments-grid :global(.at-card-body) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .at-assessments-grid-meta {
+    margin-top: auto;
+    padding-top: var(--at-spacing-sm, 0.5rem);
+  }
+</style>

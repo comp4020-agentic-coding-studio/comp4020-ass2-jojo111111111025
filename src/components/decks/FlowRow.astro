@@ -1,0 +1,33 @@
+---
+interface Props {
+  steps: string[];
+  loop?: boolean;
+}
+
+const { steps, loop = false } = Astro.props;
+---
+
+<div class="flow-row">
+  {
+    steps.map((step, index) => (
+      <>
+        <span class="flow-step">{step}</span>
+        {index < steps.length - 1 && (
+          <span class="flow-arrow" aria-hidden="true">
+            →
+          </span>
+        )}
+      </>
+    ))
+  }
+  {
+    loop && (
+      <>
+        <span class="flow-arrow" aria-hidden="true">
+          →
+        </span>
+        <span class="flow-loop-tag">↻ repeats</span>
+      </>
+    )
+  }
+</div>

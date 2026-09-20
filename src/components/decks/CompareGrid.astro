@@ -1,0 +1,28 @@
+---
+interface Panel {
+  title: string;
+  steps: string[];
+}
+
+interface Props {
+  left: Panel;
+  right: Panel;
+}
+
+const { left, right } = Astro.props;
+---
+
+<div class="compare-grid">
+  <div class="compare-panel">
+    <h3>{left.title}</h3>
+    <ol>
+      {left.steps.map((step) => <li>{step}</li>)}
+    </ol>
+  </div>
+  <div class="compare-panel">
+    <h3>{right.title}</h3>
+    <ol>
+      {right.steps.map((step) => <li>{step}</li>)}
+    </ol>
+  </div>
+</div>
